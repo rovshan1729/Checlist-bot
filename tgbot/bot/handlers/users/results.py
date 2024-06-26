@@ -38,7 +38,7 @@ async def get_results(message: types.Message, state: FSMContext):
     markup = await get_olympics_markup(olympics, language=lang)
     await message.answer(_("Natijalar bilan tanishing"), reply_markup=markup)
     await OlimpicResultsState.olimpics.set()
-
+    
 
 @dp.message_handler(state=OlimpicResultsState.olimpics)
 async def get_result(message: types.Message, state: FSMContext):

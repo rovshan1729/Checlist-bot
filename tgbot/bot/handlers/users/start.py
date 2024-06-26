@@ -146,7 +146,7 @@ async def language(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AdmissionState.self_introduction)
 async def self_introduction(message: types.Message, state: FSMContext):
-    is_correct = message.text.split(' ')
+    is_correct = [word for word in message.text.split(' ') if word.isalpha()][:3]
     if message.text and len(is_correct) >= 2:
         await state.update_data({"self_introduction": message.text})
         await message.answer(_('Telefon raqamingizni quyidagi tugmani bosgan holda yuboring.'),
@@ -156,12 +156,12 @@ async def self_introduction(message: types.Message, state: FSMContext):
         await message.answer(_("Faqat Text Formatda Kamida 2ta so'z bilan yozing"))
 
 
-@dp.message_handler(state=AdmissionState.phone, content_types=types.ContentTypes.TEXT)
-@dp.message_handler(state=AdmissionState.phone, content_types=types.ContentTypes.CONTACT)
+@dp.message_handler(state=AdmissionState.phone, content_types=types.ContentType.TEXT)
+@dp.message_handler(state=AdmissionState.phone, content_types=types.ContentType.CONTACT)
 async def contact(message: types.Message, state: FSMContext):
-    if message.content_type in types.ContentTypes.TEXT:
+    if message.content_type in types.ContentType.TEXT:
         await message.answer(_("Pastdagi tugma orqali raqamingizni yuboring"))
-    elif message.content_type in types.ContentTypes.CONTACT and message.contact.phone_number and message.from_user.id == message.contact.user_id:
+    elif message.content_type in types.ContentType.CONTACT and message.contact.phone_number and message.from_user.id == message.contact.user_id:
         await state.update_data({"phone": message.contact.phone_number})
         await message.answer(_("Tug'ilgan kuningizni kiriting.\n"
                                "Format 01.01.2000"), reply_markup=types.ReplyKeyboardRemove())
