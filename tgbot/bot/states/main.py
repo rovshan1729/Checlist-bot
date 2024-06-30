@@ -31,6 +31,7 @@ class MainState(StatesGroup):
 
 
 class AdmissionState(StatesGroup):
+    organization_state = State()
     full_name = State()
     birth_date = State()
     phone = State()
@@ -61,6 +62,10 @@ class AdmissionState(StatesGroup):
     friend_is_data_correct = State()
 
     about_university = State()
+    
+    state_university = State()
+    private_university = State()
+    education_center = State()
 
 
 

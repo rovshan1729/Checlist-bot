@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from common.models import Region, District, School
 from tgbot.bot.keyboards.inline import languages_markup
-from tgbot.bot.keyboards.reply import phone_keyboard, get_regions_markup, get_districts_markup, get_schools_markup, \
+from tgbot.bot.keyboards.reply import phone_keyboard, get_regions_markup, get_districts_markup, get_schools_markup, back, \
     main_markup, get_olympics_markup
 from tgbot.bot.states.main import AdmissionState, OlympiadState, MainState
 from tgbot.bot.utils import get_user
@@ -14,7 +14,7 @@ from tgbot.bot.loader import dp, gettext as _
 
 @dp.message_handler(state=AdmissionState.phone, content_types=types.ContentType.TEXT, text=_("🔙 Orqaga"))
 async def back_to_main(message: types.Message):
-    await message.answer(_("Familiya, Ism va Sharifingizni kiriting"), reply_markup=types.ReplyKeyboardRemove())
+    await message.answer(_("Familiya, Ism va Sharifingizni kiriting"), reply_markup=back())
     await AdmissionState.self_introduction.set()
 
 
@@ -27,7 +27,7 @@ async def back_to_phone(message: types.Message):
 @dp.message_handler(state=AdmissionState.region, text=_("🔙 Orqaga"))
 async def back_to_birth_date(message: types.Message):
     await message.answer(_("Tug'ilgan kuningizni kiriting.\n"
-                           "Format 15.01.1990"), reply_markup=types.ReplyKeyboardRemove())
+                           "Format 15.01.1990"), reply_markup=back())
     await AdmissionState.birth_date.set()
 
 

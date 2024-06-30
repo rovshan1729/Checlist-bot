@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from bot.models import Class
 from tgbot.bot.loader import gettext as _
 from bot.models import TelegramButton
@@ -18,7 +18,7 @@ def main_markup(language="uz"):
     button.add(KeyboardButton(text=_("🏆 Olimpiadalar 🏆")), KeyboardButton(text=_("📈 Natijalar 📉")))
     button.add(*(KeyboardButton(text=get_object_value(button, "title", language)) for button in button_obj if
                  get_object_value(button, "title", language) is not None))
-    button.add(KeyboardButton(text=_("🔝 Reyting 📊")), KeyboardButton(text=_("🌐 Tilni o'zgartirish")))
+    button.add(KeyboardButton(text=_("🔝 Reyting 📊")))
     return button
 
 
@@ -29,8 +29,6 @@ def generate_custom_markup(tg_buttons, language="uz"):
     button.add(KeyboardButton(text=_("🔙 Orqaga")))
     return button
 
-
-# main_markup.row("🏅 Mukofotlar 🎁", "ℹ️ Ma'lumotlar ℹ️")
 
 main_menu_markup = ReplyKeyboardMarkup(
     keyboard=[
@@ -260,3 +258,41 @@ async def rating_back():
     button = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     button.add(KeyboardButton(text=_("🔙 Orqaga")))
     return button
+
+
+def back():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="🔙 Orqaga")
+            ]
+        ],
+        resize_keyboard=True
+    )
+    
+async def get_university_markup(universities, language="uz"):
+    button = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    button.add(*(KeyboardButton(text=get_object_value(university, "title", language)) for university in universities if
+                 get_object_value(university, "title", language) is not None))
+    button.add(KeyboardButton(text=_("🔙 Orqaga")))
+    return button
+
+
+async def generate_list_markup(items: list, row_width=2):
+    markup = ReplyKeyboardMarkup(row_width=row_width, resize_keyboard=True)
+    markup.add(*(KeyboardButton(text=_(item)) for item in items))
+    markup.add(KeyboardButton(text=_("🔙 Orqaga")))
+    return markup
+
+async def generate_start_markup(items: list, row_width=2):
+    markup = ReplyKeyboardMarkup(row_width=row_width, resize_keyboard=True)
+    markup.add(*(KeyboardButton(text=_(item)) for item in items))
+    return markup
+
+
+def registration():
+    keyboard = InlineKeyboardMarkup()
+    button = InlineKeyboardButton(text="Registratsiyadan o'tish", callback_data="registration")
+    keyboard.add(button)
+    return keyboard
+

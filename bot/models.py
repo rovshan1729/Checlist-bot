@@ -10,6 +10,21 @@ from auditlog.registry import auditlog
 from utils.bot import set_webhook_request, get_info
 from common.models import BaseModel, Class
 from utils.validate_supported_tags import is_valid_content, validate_content
+from bot import choices
+
+
+class University(BaseModel):
+    title = models.CharField(_("Name"), max_length=255)
+    district = models.ForeignKey("common.District", on_delete=models.CASCADE,
+                                 related_name="universities")
+    type = models.CharField(_("Type"), max_length=255, choices=choices.OrganizationChoice.choices)
+
+    def clean(self):
+        if not self.title:
+            raise ValidationError(_("Title is required"))
+
+    def __str__(self):
+        return self.title
 
 
 class TelegramBot(models.Model):
@@ -55,6 +70,10 @@ class TelegramProfile(BaseModel):
 
     is_olimpic = models.BooleanField(default=False, editable=False)
     _user_data = models.JSONField(blank=True, null=True, verbose_name=_("User Data"), editable=False)
+    
+    organization = models.CharField(max_length=255, blank=True, null=True, choices=choices.OrganizationChoice.choices, verbose_name="User Organization")
+    
+    university = models.ForeignKey(University, models.CASCADE, null=True, blank=True, verbose_name=_("University"))
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.username} {self.telegram_id}"

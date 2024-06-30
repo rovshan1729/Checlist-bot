@@ -8,9 +8,13 @@ from common.mixins import TabbedTranslationAdmin, TranslationRequiredMixin
 admin.site.register(models.TelegramBot)
 # admin.site.register(models.TelegramProfile)
 
+@admin.register(models.University)
+class UniversityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'district', 'type',)
+
 @admin.register(models.TelegramProfile)
 class TelegramProfileAdmin(admin.ModelAdmin):
-    list_display = ("id", "telegram_id", "first_name", "last_name", "username", "language", "region", 'district', 'school', 'class_room',)
+    list_display = ("id", "telegram_id", "first_name", "last_name", "username", "language", "region", 'district', 'school', 'class_room', 'organization',)
     list_display_links = ("id", 'telegram_id', "first_name", "last_name", "username")
     list_filter = ("language", "is_registered", "is_olimpic", "region", "district", "school", "class_room",)
     search_fields = ("first_name", "last_name", "username", "telegram_id", "region__title", "district__title", "school__title",)
