@@ -152,7 +152,7 @@ async def self_introduction(message: types.Message, state: FSMContext):
     if message.text == "🔙 Orqaga":
         await message.answer("Qayerda o'qisiz?",
                              reply_markup=await generate_start_markup(choices))
-        await AdmissionState.organization_state.set()
+        await AdmissionState.full_name.set()
         
     elif message.text and 2 <= len(is_correct) <= 3:
         await state.update_data({"self_introduction": message.text})
