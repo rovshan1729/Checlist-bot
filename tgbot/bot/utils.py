@@ -20,3 +20,4 @@ async def get_lang_code(state):
 def get_user(telegram_id):
     user = User.objects.filter(telegram_id=telegram_id).first()
     return user
+    

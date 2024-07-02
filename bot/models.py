@@ -75,6 +75,8 @@ class TelegramProfile(BaseModel):
     
     university = models.ForeignKey(University, models.CASCADE, null=True, blank=True, verbose_name=_("University"))
 
+    coins = models.PositiveIntegerField(default=0, blank=True, null=True, editable=False, verbose_name="User Coins")
+    
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.username} {self.telegram_id}"
 

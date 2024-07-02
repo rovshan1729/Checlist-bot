@@ -15,12 +15,11 @@ def test_skip_markup():
 def main_markup(language="uz"):
     button_obj = TelegramButton.objects.filter(parent=None)
     button = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    button.add(KeyboardButton(text=_("🏆 Olimpiadalar 🏆")), KeyboardButton(text=_("📈 Natijalar 📉")))
+    button.add(KeyboardButton(text=_("🐍 Python testlar 🏆")), KeyboardButton(text=_("📈 Natijalar 📉")))
     button.add(*(KeyboardButton(text=get_object_value(button, "title", language)) for button in button_obj if
                  get_object_value(button, "title", language) is not None))
-    button.add(KeyboardButton(text=_("🔝 Reyting 📊")))
+    button.add(KeyboardButton(text=_("🔝 Reyting 📊")), KeyboardButton(text="💸My Coins💰"))
     return button
-
 
 def generate_custom_markup(tg_buttons, language="uz"):
     button = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)

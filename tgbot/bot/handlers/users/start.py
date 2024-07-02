@@ -40,10 +40,12 @@ async def do_start(message: types.Message, state: FSMContext):
                                        username=user.username, language=user.language_code,
                                        full_name=user.full_name)
     if not user.is_registered:
+        photo="https://www.dropbox.com/scl/fi/c3ql5ucg986wyynwmmygb/Python.png?rlkey=p2b3pbgjeco26ofplxiyo12uo&st=xcwqllt4&dl=0"
         await message.answer_photo(
-            photo="https://globaledu-bot.uicgroup.tech/media/notifications/photo_2024-04-30_16.54.13.jpeg",
-            caption='🏆 Boshqarma boshlig\'ining "Kelajak yoshlari" deb nomlangan ingliz tili bo\'yicha onlayn Olimpiadasiga Xush kelibsiz!\n\n',
-            reply_markup=registration())
+            photo=photo,
+            caption='🏆 Boshqarma boshlig\'ining "Kelajak yoshlari" deb nomlangan <b>python</b> bo\'yicha onlayn Olimpiadasiga Xush kelibsiz!\n\n',
+            reply_markup=registration(),
+            parse_mode='HTML')
         await AdmissionState.organization_state.set()
     else:
         await message.answer(_("Bosh menyu"), reply_markup=main_markup(lang))
@@ -94,10 +96,12 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
                                            username=user.username, language=user.language_code,
                                            full_name=user.full_name)
         if not user.is_registered:
+            photo="https://www.dropbox.com/scl/fi/c3ql5ucg986wyynwmmygb/Python.png?rlkey=p2b3pbgjeco26ofplxiyo12uo&st=xcwqllt4&dl=0"
             await call.message.answer_photo(
-                photo="https://globaledu-bot.uicgroup.tech/media/notifications/photo_2024-04-30_16.54.13.jpeg",
+                photo=photo,
                 caption='🏆 Boshqarma boshlig\'ining "Kelajak yoshlari" deb nomlangan ingliz tili bo\'yicha onlayn Olimpiadasiga Xush kelibsiz!\n\n',
-                reply_markup=registration())
+                reply_markup=registration(),
+                parse_mode='HTML')
             await AdmissionState.organization_state.set()
         else:
             await call.message.answer(_("Bosh menyu"), reply_markup=main_markup(lang))
@@ -231,6 +235,7 @@ async def user_region(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AdmissionState.district)
 async def user_district(message: types.Message, state: FSMContext):
+    
     if message.text:
         data = await state.get_data()
         lang = data.get("language")

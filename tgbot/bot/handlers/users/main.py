@@ -20,7 +20,7 @@ async def change_lang(message: types.Message):
     await AdmissionState.change_language.set()
 
 
-@dp.message_handler(text=_("🏆 Olimpiadalar 🏆"), state="*")
+@dp.message_handler(text=_("🐍 Python testlar 🏆"), state="*")
 async def get_olympics(message: types.Message, state: FSMContext):
     data = await state.get_data()
     lang = data.get("language")

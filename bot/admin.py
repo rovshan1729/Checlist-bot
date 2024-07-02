@@ -14,7 +14,7 @@ class UniversityAdmin(admin.ModelAdmin):
 
 @admin.register(models.TelegramProfile)
 class TelegramProfileAdmin(admin.ModelAdmin):
-    list_display = ("id", "telegram_id", "first_name", "last_name", "username", "language", "region", 'district', 'school', 'class_room', 'organization',)
+    list_display = ("id", "telegram_id", "first_name", "last_name", "username", "language", "region", 'district', 'school', 'class_room', 'organization', "coins",)
     list_display_links = ("id", 'telegram_id', "first_name", "last_name", "username")
     list_filter = ("language", "is_registered", "is_olimpic", "region", "district", "school", "class_room",)
     search_fields = ("first_name", "last_name", "username", "telegram_id", "region__title", "district__title", "school__title",)

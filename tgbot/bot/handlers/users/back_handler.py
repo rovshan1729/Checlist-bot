@@ -125,6 +125,6 @@ async def back_olympics(message: types.Message, state: FSMContext):
     if olympics.filter(class_room__isnull=False).exists():
         olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
 
-    markup = await get_olympics_markup(olympics, language=lang)
+    markup = await get_olwympics_markup(olympics, language=lang)
     await message.answer(_("Olimpiadalar bilan tanishing"), reply_markup=markup)
     await state.set_state(OlympiadState.choose_olympiad)
