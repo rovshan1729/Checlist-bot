@@ -4,6 +4,7 @@ from solo.models import SingletonModel
 from common.managers import DistrictManager, RegionManager
 from django.core.exceptions import ValidationError
 
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated at"))
@@ -158,3 +159,4 @@ class Settings(SingletonModel):
 
     class Meta:
         verbose_name = _("Settings")
+

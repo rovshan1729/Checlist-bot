@@ -12,11 +12,37 @@ admin.site.register(models.TelegramBot)
 class UniversityAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'district', 'type',)
 
+
+@admin.register(models.Product)
+class UniversityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'description', 'price', 'photo',)
+
+
+@admin.register(models.UserProduct)
+class UserProductAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product', 'user', 'quantity', 'get_phone_number',)
+    list_display_links = ("id", 'product', 'user')
+    list_select_related = ("product", 'user',)
+    list_per_page = 20
+
+    def get_phone_number(self, obj):
+        return obj.user.phone_number
+
+    get_phone_number.short_description = 'Phone Number'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+
+    def user(self, obj):
+        return obj.user.__str__()
+
+    user.short_description = "User"
+
 @admin.register(models.TelegramProfile)
 class TelegramProfileAdmin(admin.ModelAdmin):
     list_display = ("id", "telegram_id", "first_name", "last_name", "username", "language", "region", 'district', 'school', 'class_room', 'organization', "coins",)
     list_display_links = ("id", 'telegram_id', "first_name", "last_name", "username")
-    list_filter = ("language", "is_registered", "is_olimpic", "region", "district", "school", "class_room",)
+    list_filter = ("language", "is_registered", "is_olimpic", "region", "district", "school", "class_room", "coins")
     search_fields = ("first_name", "last_name", "username", "telegram_id", "region__title", "district__title", "school__title",)
     list_per_page = 20
     list_select_related = ("region", "district", "school", )

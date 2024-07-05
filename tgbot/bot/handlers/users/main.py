@@ -4,7 +4,7 @@ from tgbot.bot.keyboards.inline import languages_markup, test_skip_inline
 from tgbot.bot.keyboards.reply import main_markup, get_olympics_markup, start_olympic_markup, test_skip_markup
 from tgbot.bot.states.main import AdmissionState, OlympiadState, MainState
 from olimpic.models import Olimpic, Question, UserOlimpic, UserQuestion, Option, UserQuestionOption
-from tgbot.bot.utils import get_user
+from tgbot.bot.utils import get_user, reset_correct_answers
 from tgbot.bot.loader import dp, bot, gettext as _
 from django.utils import timezone
 from utils.bot import get_model_queryset
@@ -20,7 +20,31 @@ async def change_lang(message: types.Message):
     await AdmissionState.change_language.set()
 
 
-@dp.message_handler(text=_("🐍 Python testlar 🏆"), state="*")
+@dp.message_handler(text=_("🐍 Py Simulyator 🧑‍💻"), state="*")
+async def get_simulyator(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    lang = data.get("language")
+    tg_user = get_user(message.from_user.id)
+    if not lang:
+        if tg_user:
+            lang = tg_user.language
+    olympics = Olimpic.objects.filter(is_active=True, end_time__gte=timezone.now()).order_by('start_time', 'end_time')
+    test = Olimpic.objects.all()
+
+    if olympics.filter(region__isnull=False).exists():
+        olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
+    if olympics.filter(district__isnull=False).exists():
+        olympics = olympics.filter(Q(district=tg_user.district) | Q(district__isnull=True))
+    if olympics.filter(school__isnull=False).exists():
+        olympics = olympics.filter(Q(school_id=tg_user.school_id) | Q(school__isnull=True))
+    if olympics.filter(class_room__isnull=False).exists():
+        olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
+
+    markup = await get_olympics_markup(olympics, language=lang)
+    await message.answer(_("Birini tanishing"), reply_markup=markup)
+    await OlympiadState.choose_olympiad.set()
+
+@dp.message_handler(text=_("🥇 Python Olimpiadalar 🏆"), state="*")
 async def get_olympics(message: types.Message, state: FSMContext):
     data = await state.get_data()
     lang = data.get("language")
@@ -39,7 +63,6 @@ async def get_olympics(message: types.Message, state: FSMContext):
         olympics = olympics.filter(Q(school_id=tg_user.school_id) | Q(school__isnull=True))
     if olympics.filter(class_room__isnull=False).exists():
         olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
-
     markup = await get_olympics_markup(olympics, language=lang)
     await message.answer(_("Olimpiadalar bilan tanishing"), reply_markup=markup)
     await OlympiadState.choose_olympiad.set()
@@ -49,7 +72,6 @@ async def get_olympics(message: types.Message, state: FSMContext):
 async def choose_olympiad(message: types.Message, state: FSMContext):
     queryset = get_model_queryset(Olimpic, message.text)
     tg_user = get_user(message.from_user.id)
-
     if queryset.exists():
         olympic = queryset.first()
         if (
@@ -67,21 +89,22 @@ async def choose_olympiad(message: types.Message, state: FSMContext):
                 user = get_user(message.from_user.id)
                 if user:
                     lang = user.language
-            title = get_object_value(olympic, "title", lang)
-            description = parse_telegram_message(get_object_value(olympic, "description", lang))
-            if olympic.file_id:
-                image = olympic.file_id
-            else:
-                image = str(settings.BACK_END_URL) + olympic.image.url
+
+            # title = get_object_value(Olimpic, "title", lang)
+            # description = parse_telegram_message(get_object_value(queryset, "description", lang))
+            # if olympic.file_id:
+            #     image = olympic.file_id
+            # else:
+            #     image = str(settings.BACK_END_URL) + olympic.image.url
             try:
-                response = await message.answer_photo(photo=image, caption=f"<b>{title}</b>\n\n{description}",
-                                                      parse_mode="HTML", reply_markup=start_olympic_markup)
-                if not olympic.file_id:
-                    olympic.file_id = response.photo[-1].file_id
-                    olympic.save(update_fields=["file_id"])
+                response = await message.answer(text=f'Testni boshlang',
+                                                       reply_markup=start_olympic_markup)
+                # if not olympic.file_id:
+                #     olympic.file_id = response.photo[-1].file_id
+                #     olympic.save(update_fields=["file_id"])
             except Exception as error:
                 print(error)
-                await message.answer(text=f"<b>{title}</b>\n\n{description}", parse_mode="HTML",
+                await message.answer(text="Testni boshlang",
                                      reply_markup=start_olympic_markup)
             await OlympiadState.confirm_start.set()
 
@@ -106,6 +129,20 @@ async def send_next_poll(olympic: Olimpic, user_olimpic: UserOlimpic, user: Tele
         question = questions.first()
         option_variants = question.options.all().order_by("?")
         content_message_id = None
+        if question.image:
+            image = str(settings.BACK_END_URL) + question.image.url
+            try:
+                content = await bot.send_photo(chat_id=user.telegram_id, photo=image)
+                content_message_id = content.message_id
+            except Exception as error:
+                print(error)
+        if question.file_content:
+            file = str(settings.BACK_END_URL) + question.file_content.url
+            try:
+                content = await bot.send_document(chat_id=user.telegram_id, document=file)
+                content_message_id = content.message_id
+            except Exception as error:
+                print(error)
         poll_message = await bot.send_poll(chat_id=user.telegram_id,
                                            question=f"[{len(list(user_questions)) + 1} / {olympic.questions.count()}]. {question.text}",
                                            options=[option.title for option in option_variants],
@@ -174,10 +211,11 @@ async def start_test(message: types.Message, state: FSMContext):
                 await message.answer(_("Olimpiada tugagan"))
                 return
             user = get_user(message.from_user.id)
-            user_olympic = UserOlimpic.objects.filter(user=user, olimpic=olympic).exists()
-            if user_olympic:
-                await message.answer(_("Siz oldin bu olimpiadada ishtirok qilgansiz"))
-                return
+            reset_correct_answers(user)
+            # user_olympic = UserOlimpic.objects.filter(user=user, olimpic=olympic).exists()
+            # if user_olympic:
+            #     await message.answer(_("Siz oldin bu olimpiadada ishtirok qilgansiz"))
+            #     return
             if olympic.start_time > timezone.now():
                 await message.answer(f"Test boshlanish sanasi: {olympic.start_time.strftime('%d-%m-%Y %H:%M')}")
             else:
@@ -297,6 +335,13 @@ async def finished_test(message: types.Message, state: FSMContext):
     user_olimpic.olimpic_duration = str(olimpic_time).split(".")[0]
     user_olimpic.save(
         update_fields=["olimpic_duration", "end_time", "correct_answers", "wrong_answers", "not_answered"])
+
+    correct = user_questions.filter(is_correct=True).count()
+    if correct == 10:
+        user.coins += 1
+        user.save(update_fields=["coins"])
+
+
     await bot.send_message(
         user.telegram_id,
         _("🏁 “{olimpic_name}” testi yakunlandi!\n\n"
@@ -314,9 +359,11 @@ async def finished_test(message: types.Message, state: FSMContext):
         ),
         reply_markup=main_markup(language=user.language)
     )
-
     await message.answer(_("Bosh menyu"), reply_markup=main_markup(lang))
     await MainState.main.set()
+
+
+
 
 
 @dp.poll_answer_handler()
@@ -325,7 +372,10 @@ async def get_poll_answer(poll_answer: types.PollAnswer):
     poll_id = poll_answer.poll_id
     option_ids = poll_answer.option_ids
     user = get_user(user_id)
+
     user_question = UserQuestion.objects.filter(poll_id=str(poll_id), user=user).first()
+    user_olympic = UserOlimpic.objects.filter(user=user).first()
+
     if user_question:
         user_question_option = UserQuestionOption.objects.filter(user_question=user_question).first()
         if user_question_option and len(option_ids) == 1:
@@ -335,19 +385,25 @@ async def get_poll_answer(poll_answer: types.PollAnswer):
             user_question.is_correct = bool(correct_option_index == user_option_index)
             user_question.user_option = user_question_option.option
             user_question.save(update_fields=["is_answered", "is_correct", "user_option"])
-            try:
-                if user_question.message_id:
-                    await bot.delete_message(user_id, user_question.message_id)
-                if user_question.question.image or user_question.question.file_content:
-                    await bot.delete_message(user_id, user_question.content_message_id)
-            except Exception as e:
-                print(e)
-            # send another poll if olympic questions is not finished
-            await send_next_poll(olympic=user_question.olimpic, user_olimpic=user_question.user_olimpic, user=user)
-        else:
-            await bot.send_message(chat_id=user_id, text=_("Javob berishda xatolik yuzaga keldi"))
+
+        try:
+            if user_question.message_id:
+                await bot.delete_message(user_id, user_question.message_id)
+            if user_question.question.image or user_question.question.file_content:
+                await bot.delete_message(user_id, user_question.content_message_id)
+        except Exception as e:
+            print(e)
+
+        # send another poll if olympic questions is not finished
+        await send_next_poll(olympic=user_question.olimpic, user_olimpic=user_question.user_olimpic, user=user)
     else:
         await bot.send_message(chat_id=user_id, text=_("Poll va savol topilmadi"))
+
+    # Calculate correct answers and award coins if necessary
+    correct = UserQuestion.objects.filter(user=user, is_correct=True).count()
+    if correct == 10:
+        user.coins += 1
+        user.save(update_fields=["coins"])
 
 
 @dp.message_handler(text=_("🏠 Asosiy menyu"), state="*")

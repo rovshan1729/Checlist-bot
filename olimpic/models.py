@@ -87,7 +87,7 @@ class Question(BaseModel):
     olimpic = models.ForeignKey(Olimpic, models.CASCADE, related_name="questions")
 
     text = RichTextField(verbose_name=_("Text"))
-    duration = models.PositiveIntegerField(default=0, verbose_name=_("Duration (seconds)"))
+    duration = models.PositiveIntegerField(default=60, verbose_name=_("Duration (seconds)"))
     image = models.ImageField(upload_to="questions", null=True, blank=True)
     file_content = models.FileField(upload_to="questions", null=True, blank=True)
 
@@ -98,9 +98,9 @@ class Question(BaseModel):
         if not self.text:
             raise ValidationError(_("Text is required"))
 
-        if not is_valid_content(self.text_uz) and not is_valid_content(self.text_ru) and not is_valid_content(
-                self.text_en):
-            raise ValidationError(_("Invalid content"))
+        # if not is_valid_content(self.text_uz) and not is_valid_content(self.text_ru) and not is_valid_content(
+        #         self.text_en):
+        #     raise ValidationError(_("Invalid content"))
 
         if not self.text_uz:
             self.text_uz = self.text
@@ -121,6 +121,7 @@ class OlimpicCertifeicate(BaseModel):
     certificate = models.ImageField(upload_to="certificates", null=True, blank=True)
 
 
+
 class Option(BaseModel):
     title = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False, db_index=True)
@@ -133,9 +134,9 @@ class Option(BaseModel):
         if not self.title:
             raise ValidationError(_("Title is required"))
 
-        if not is_valid_content(self.title_uz) and not is_valid_content(self.title_ru) and not is_valid_content(
-                self.title_en):
-            raise ValidationError(_("Invalid content"))
+        # if not is_valid_content(self.title_uz) and not is_valid_content(self.title_ru) and not is_valid_content(
+        #         self.title_en):
+        #     raise ValidationError(_("Invalid content"))
 
         if not self.title_uz:
             self.title_uz = self.title
@@ -202,9 +203,6 @@ class UserQuestionOption(BaseModel):
 
     def __str__(self):
         return f"{self.user_question} - {self.option} - {self.order}"
-
-
-
 
 
 auditlog.register(Olimpic)

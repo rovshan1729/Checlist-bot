@@ -15,7 +15,8 @@ def test_skip_markup():
 def main_markup(language="uz"):
     button_obj = TelegramButton.objects.filter(parent=None)
     button = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    button.add(KeyboardButton(text=_("🐍 Python testlar 🏆")), KeyboardButton(text=_("📈 Natijalar 📉")))
+    button.add(KeyboardButton(text=_("🥇 Python Olimpiadalar 🏆")))
+    button.add(KeyboardButton(text=_("🐍 Py Simulyator 🧑‍💻")), KeyboardButton(text=_("📈 Natijalar 📉")))
     button.add(*(KeyboardButton(text=get_object_value(button, "title", language)) for button in button_obj if
                  get_object_value(button, "title", language) is not None))
     button.add(KeyboardButton(text=_("🔝 Reyting 📊")), KeyboardButton(text="💸My Coins💰"))
@@ -181,12 +182,23 @@ async def get_classes_markup():
     return button
 
 
+# async def get_olympics_markup(olympics, language="uz"):
+#     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+#     markup.add(*(KeyboardButton(text=get_object_value(olympic, "title", language)) for olympic in olympics if
+#                  get_object_value(olympic, "title", language) is not None))
+#     markup.add(KeyboardButton(text=_("🔙 Orqaga")))
+#     return markup
+
 async def get_olympics_markup(olympics, language="uz"):
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(*(KeyboardButton(text=get_object_value(olympic, "title", language)) for olympic in olympics if
-                 get_object_value(olympic, "title", language) is not None))
+    for olympic in olympics:
+        # title = get_object_value(olympic, "title", language)
+        # if title:
+        markup.add(KeyboardButton(text=olympic.title))
     markup.add(KeyboardButton(text=_("🔙 Orqaga")))
     return markup
+
+
 
 
 async def get_result_markup(is_end_time: bool):
@@ -295,3 +307,17 @@ def registration():
     keyboard.add(button)
     return keyboard
 
+
+def get_coins_kb():
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="Shop")
+            ],
+            [
+                KeyboardButton(text="🔙 Orqaga")
+            ]
+        ],
+        resize_keyboard=True
+    )
+    return keyboard

@@ -59,7 +59,7 @@ class TelegramProfile(BaseModel):
 
     full_name = models.CharField(max_length=255, null=True, blank=True, verbose_name=_("Full Name"))
     phone_number = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Phone Number"))
-    birth_day = models.DateField(blank=True, null=True, verbose_name=_("Bith Day"))
+    birth_day = models.DateField(blank=True, null=True, verbose_name=_("Birth Day"))
 
     region = models.ForeignKey('common.Region', models.CASCADE, blank=True, null=True, verbose_name=_("Region"),
                                related_name="region")
@@ -75,7 +75,7 @@ class TelegramProfile(BaseModel):
     
     university = models.ForeignKey(University, models.CASCADE, null=True, blank=True, verbose_name=_("University"))
 
-    coins = models.PositiveIntegerField(default=0, blank=True, null=True, editable=False, verbose_name="User Coins")
+    coins = models.PositiveIntegerField(default=0, blank=True, null=True, verbose_name="User Coins")
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.username} {self.telegram_id}"
@@ -251,6 +251,24 @@ class UserNotification(models.Model):
         verbose_name = _("User Notification")
         verbose_name_plural = _("User Notifications")
         db_table = "user_notifications"
+
+
+class Product(BaseModel):
+    title = models.CharField(max_length=255, verbose_name="Product")
+    description = models.TextField(verbose_name="Product description")
+    price = models.PositiveSmallIntegerField(default=0, verbose_name="Price")
+    photo = models.ImageField(upload_to="product_images/%Y/%m/%d/", verbose_name="Product photo")
+    class meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+
+    def __str__(self):
+        return f"{self.title} x {self.price} coins"
+
+class UserProduct(BaseModel):
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
+    user = models.ForeignKey(TelegramProfile, on_delete=models.CASCADE, related_name="user_products")
+    quantity = models.IntegerField(default=1)
 
 
 auditlog.register(RequiredGroup)

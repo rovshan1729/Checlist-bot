@@ -24,6 +24,12 @@ class OlympiadState(StatesGroup):
     get_rating = State()
 
 
+class MarketState(StatesGroup):
+    main = State()
+    buy_product = State()
+
+
+
 class MainState(StatesGroup):
     main = State()
     change_language = State()
