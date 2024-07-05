@@ -48,6 +48,26 @@ class TelegramBot(models.Model):
         db_table = "telegram_bots"
 
 
+class UserRoleChoices(models.TextChoices):
+    DIRECTOR = "director", _("Director")
+    TEACHER = "teacher", _("Teacher")
+    PUPIL = "pupil", _("Pupil")
+    OTHER = "other", _("Other")
+
+class DirectorPositionChoices(models.TextChoices):
+    DIRECTOR = "director", _("Director")
+    MMI_SUBSTITUTE = 'mmi_subtitute', _('MMIBDO\' o\'rinbosari')
+    ACADEMIC_WORK_SUBSTITUTE = 'academic_work_subtitute', _("O'quv ishlari bo'yicha o'rinbosar")
+
+
+class Since(models.Model):
+    class_ = models.CharField(max_length=128, choices=Class, verbose_name=_("Class"))
+    title = models.CharField(max_length=255, verbose_name=_("Title"))
+
+    def __str__(self):
+        return self.title
+
+
 class TelegramProfile(BaseModel):
     bot = models.ForeignKey(TelegramBot, models.CASCADE, null=True)
     telegram_id = models.PositiveBigIntegerField()
