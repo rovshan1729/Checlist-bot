@@ -7,8 +7,11 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule, ClockedSch
 
 from auditlog.registry import auditlog
 
+import bot.models
 from common.models import BaseModel, Class
 from utils.validate_supported_tags import is_valid_content, validate_content
+
+from bot import choices
 
 
 # Create your models here.
@@ -34,6 +37,15 @@ class Olimpic(BaseModel):
                                verbose_name=_("School"))
     class_room = models.CharField(max_length=255, blank=True, null=True, choices=Class, verbose_name=_("Class Room"),
                                   db_index=True)
+
+    university = models.ForeignKey("bot.University", models.CASCADE, blank=True, null=True,
+                                   related_name="olimpic_universities")
+
+    type = models.CharField(max_length=25, choices=choices.OlimpiadaOrSimulyator.choices,
+                            default=choices.OlimpiadaOrSimulyator.SIMULYATOR,
+                            db_index=True,
+                            verbose_name='Type'
+                            )
 
     def __str__(self):
         return self.title

@@ -14,8 +14,11 @@ class RegisterState(StatesGroup):
 
 
 class OlympiadState(StatesGroup):
+
     choose_olympiad = State()
-    confirm_start = State()
+    choose_simulyator = State()
+    confirm_simulyator = State()
+    confirm_olimpiad = State()
     rules = State()
     test = State()
     choose = State()

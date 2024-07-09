@@ -42,7 +42,7 @@ async def get_shop(message: types.Message, state: FSMContext):
         price = product.price
         photo_path = product.photo.path
         photo = InputFile(photo_path)
-        quantity = 1  # default quantity
+        quantity = 1
         async with state.proxy() as data:
             data['quantities'][product.id] = quantity
         await message.answer("Barcha productla",
@@ -53,10 +53,10 @@ async def get_shop(message: types.Message, state: FSMContext):
                                              inline_keyboard=[
                                                  [
                                                      types.InlineKeyboardButton(
-                                                         text="+", callback_data=f"add_{product.id}"
+                                                         text="-", callback_data=f"subtract_{product.id}"
                                                      ),
                                                      types.InlineKeyboardButton(
-                                                         text="-", callback_data=f"subtract_{product.id}"
+                                                         text="+", callback_data=f"add_{product.id}"
                                                      )
                                                  ],
                                                  [
@@ -95,6 +95,18 @@ async def buy_product(call: types.CallbackQuery, state: FSMContext):
             user.save()
 
             user_product = UserProduct.objects.create(user=user, product_id=product_id, quantity=quantity)
+            tg_user = user_product.user.username
+            phone_number = user_product.user.phone_number
+            product = user_product.product
+            quantity = user_product.quantity
+            print(f"Username: {tg_user}\n\n"
+                    f"Product va narxi: {product}\n\n"
+                    f"Soni: {quantity}\n\n"
+                    f"Telefon raqami: {phone_number}")
+            await bot.send_message(chat_id=2124744962, text=f"Username: {tg_user}\n\n"
+                                                            f"Product va narxi: {product}\n\n"
+                                                            f"Soni: {quantity}\n\n"
+                                                            f"Telefon raqami: {phone_number}")
 
             for message_id in message_ids:
                 try:
@@ -139,10 +151,10 @@ async def modify_quantity(call: types.CallbackQuery, state: FSMContext):
                 inline_keyboard=[
                     [
                         types.InlineKeyboardButton(
-                            text="+", callback_data=f"add_{product_id}"
+                            text="-", callback_data=f"subtract_{product_id}"
                         ),
                         types.InlineKeyboardButton(
-                            text="-", callback_data=f"subtract_{product_id}"
+                            text="+", callback_data=f"add_{product_id}"
                         )
                     ],
                     [

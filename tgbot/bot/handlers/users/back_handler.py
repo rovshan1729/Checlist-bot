@@ -10,6 +10,7 @@ from django.utils import timezone
 from olimpic.models import Olimpic
 from django.db.models import Q
 from tgbot.bot.loader import dp, gettext as _
+from bot.choices import OlimpiadaOrSimulyator
 
 
 @dp.message_handler(state=AdmissionState.phone, content_types=types.ContentType.TEXT, text=_("🔙 Orqaga"))
@@ -94,8 +95,59 @@ async def back_main_menu(message: types.Message, state: FSMContext):
     await MainState.main.set()
 
 
-@dp.message_handler(text=_("🔙 Orqaga"), state=OlympiadState.confirm_start)
+@dp.message_handler(text=_("🔙 Orqaga"), state=OlympiadState.choose_simulyator)
+async def back_main_menu(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    lang = data.get("language")
+    if not lang:
+        user = get_user(message.from_user.id)
+        if user:
+            lang = user.language
+
+    await message.answer(_("Main menyudasiz!"), reply_markup=main_markup(lang))
+    await MainState.main.set()
+
+
+@dp.message_handler(text=_("🔙 Orqaga"), state=OlympiadState.confirm_olimpiad)
 async def back_olympics(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    tg_user = get_user(message.from_user.id)
+    lang = data.get("language")
+    if not lang:
+        user = get_user(message.from_user.id)
+        if user:
+            lang = user.language
+    olympics = Olimpic.objects.filter(is_active=True, end_time__gte=timezone.now()).order_by('start_time', 'end_time')
+
+    if olympics.filter(region__isnull=False).exists():
+        olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
+    if olympics.filter(district__isnull=False).exists():
+        olympics = olympics.filter(Q(district=tg_user.district) | Q(district__isnull=True))
+    if olympics.filter(school__isnull=False).exists():
+        olympics = olympics.filter(Q(school_id=tg_user.school_id) | Q(school__isnull=True))
+    if olympics.filter(class_room__isnull=False).exists():
+        olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
+
+
+    olympics = Olimpic.objects.filter(is_active=True,
+                                     type=OlimpiadaOrSimulyator.OLIMPIADA).order_by('start_time', 'end_time')
+
+    if olympics.filter(region__isnull=False).exists():
+        olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
+    if olympics.filter(district__isnull=False).exists():
+        olympics = olympics.filter(Q(district=tg_user.district) | Q(district__isnull=True))
+    if olympics.filter(school__isnull=False).exists():
+        olympics = olympics.filter(Q(school_id=tg_user.school_id) | Q(school__isnull=True))
+    if olympics.filter(class_room__isnull=False).exists():
+        olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
+
+    markup = await get_olympics_markup(olympics, language=lang)
+    await message.answer(_("Olimpiadalar bilan tanishing"), reply_markup=markup)
+    await state.set_state(OlympiadState.choose_olympiad)
+
+
+@dp.message_handler(text=_("🔙 Orqaga"), state=OlympiadState.confirm_simulyator)
+async def back_simulyator(message: types.Message, state: FSMContext):
     data = await state.get_data()
     tg_user = get_user(message.from_user.id)
     lang = data.get("language")
@@ -114,7 +166,8 @@ async def back_olympics(message: types.Message, state: FSMContext):
         olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
 
 
-    olympics = Olimpic.objects.filter(is_active=True).order_by('start_time', 'end_time')
+    olympics = Olimpic.objects.filter(is_active=True,
+                                     type=OlimpiadaOrSimulyator.SIMULYATOR).order_by('start_time', 'end_time')
 
     if olympics.filter(region__isnull=False).exists():
         olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
@@ -126,5 +179,5 @@ async def back_olympics(message: types.Message, state: FSMContext):
         olympics = olympics.filter(Q(class_room=tg_user.class_room) | Q(class_room__isnull=True))
 
     markup = await get_olympics_markup(olympics, language=lang)
-    await message.answer(_("Olimpiadalar bilan tanishing"), reply_markup=markup)
-    await state.set_state(OlympiadState.choose_olympiad)
+    await message.answer(_("Simulyator bilan tanishing"), reply_markup=markup)
+    await state.set_state(OlympiadState.choose_simulyator)

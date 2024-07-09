@@ -63,3 +63,5 @@ def test_skip_inline():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=_("➡️ O'tkazib yuborish"), callback_data="skip_test")],
     ])
+
+

@@ -53,23 +53,31 @@ async def do_start(message: types.Message, state: FSMContext):
 
 @dp.message_handler(CommandStart(), state="*")
 async def bot_start(message: types.Message, state: FSMContext):
-    await state.finish()
+    user = get_user(message.from_user.id)
+    data = await state.get_data()
+    if user.is_olimpic:
+        previous_state = data.get('previous_state')
+        if previous_state:
+            await state.set_state(previous_state)
+        await message.answer(_("Siz hozirda olimpiada jarayonidasiz. Iltimos, olimpiadani tugating."))
+    else:
+        await state.finish()
 
-    final_status, chat_ids = await get_result(user_id=message.from_user.id)
+        final_status, chat_ids = await get_result(user_id=message.from_user.id)
 
-    reply_markup = await get_check_button(chat_ids)
+        reply_markup = await get_check_button(chat_ids)
 
-    if not final_status:
-        if reply_markup:
-            check_subs_message = await message.answer(
-                _(f"Quyidagi kanallarga obuna bo'lishingiz kerak, pastdagi tugmalar ustiga bosing ⬇️"),
-                reply_markup=reply_markup,
-                disable_web_page_preview=True)
-            await state.update_data({"check_subs_message_id": check_subs_message.message_id})
+        if not final_status:
+            if reply_markup:
+                check_subs_message = await message.answer(
+                    _(f"Quyidagi kanallarga obuna bo'lishingiz kerak, pastdagi tugmalar ustiga bosing ⬇️"),
+                    reply_markup=reply_markup,
+                    disable_web_page_preview=True)
+                await state.update_data({"check_subs_message_id": check_subs_message.message_id})
+            else:
+                await do_start(message, state)
         else:
             await do_start(message, state)
-    else:
-        await do_start(message, state)
 
 
 @dp.callback_query_handler(text="check_subs")
@@ -135,13 +143,37 @@ async def get_user_organization(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=AdmissionState.full_name)
 async def get_user_fullname(message: types.Message, state: FSMContext):
+    choices = OrganizationChoice.labels
     user = get_user(message.from_user.id)
     if not user.is_registered:
-        await state.update_data({"organization": message.text})
-        await message.answer("Iltimos, familiyangizni, ismingizni va otangizning ismini kiriting ⬇️",
-                                reply_markup=back())
-        await AdmissionState.self_introduction.set()
-    
+
+        if message.text == 'Maktab':
+            await state.update_data({"organization": message.text})
+            await message.answer("Iltimos, familiyangizni, ismingizni va otangizning ismini kiriting ⬇️",
+                                    reply_markup=back())
+            await AdmissionState.self_introduction.set()
+
+        elif message.text == "O\'quv markaz":
+            await state.update_data({"organization": message.text})
+            await message.answer("Iltimos, familiyangizni, ismingizni va otangizning ismini kiriting ⬇️",
+                                 reply_markup=back())
+            await AdmissionState.self_introduction.set()
+
+        elif message.text == "Xususiy universitet":
+            await state.update_data({"organization": message.text})
+            await message.answer("Iltimos, familiyangizni, ismingizni va otangizning ismini kiriting ⬇️",
+                                 reply_markup=back())
+            await AdmissionState.self_introduction.set()
+
+        elif message.text == "Davlat universitet":
+            await state.update_data({"organization": message.text})
+            await message.answer("Iltimos, familiyangizni, ismingizni va otangizning ismini kiriting ⬇️",
+                                 reply_markup=back())
+            await AdmissionState.self_introduction.set()
+        else:
+            await message.answer(_("Maktab, O'quv markaz, Xususiy universitet, Davlat universitet nomlangan davlatlarni tanlang"),
+                                 reply_markup=await generate_start_markup(choices))
+
     else:
         await message.answer(_("Siz qilgan o'zgarishlar saqlandi, iltimos botni /start bosib qayta ishga tushiring"),
                              reply_markup=types.ReplyKeyboardRemove())
@@ -272,7 +304,7 @@ async def user_district(message: types.Message, state: FSMContext):
                     type=OrganizationChoice.EDUCATION_CENTER
                 )
                 await state.update_data({"district_id": district.id})
-                await message.answer("ta'lim markazi", 
+                await message.answer("Ta'lim markazi",
                         reply_markup=await get_university_markup(edu_centers, lang))
                 await AdmissionState.education_center.set()
         
@@ -283,7 +315,7 @@ async def user_district(message: types.Message, state: FSMContext):
                     type=OrganizationChoice.STATE_UNIVERSITY    
                 ).order_by('title')
                 await state.update_data({"district_id": district.id})
-                await message.answer("Xususiy universitetini tanlang.", 
+                await message.answer("Davlat universitetini tanlang.",
                         reply_markup=await get_university_markup(state_university, lang))
                 await AdmissionState.state_university.set()
                 
@@ -294,7 +326,7 @@ async def user_district(message: types.Message, state: FSMContext):
                     type=OrganizationChoice.PRIVATE_UNIVERSITY    
                 ).order_by('title')
                 await state.update_data({"district_id": district.id})
-                await message.answer("Davlat universitetini tanlang.", 
+                await message.answer("Xususiy universitetini tanlang.",
                         reply_markup=await get_university_markup(private_university, lang))
                 await AdmissionState.private_university.set() 
 
@@ -323,21 +355,20 @@ async def user_state_university(message: types.Message, state: FSMContext):
                 lang = user.language
         if message.text == _("🔙 Orqaga"):
             data = await state.get_data()
+
             districts = District.objects.filter(
                 parent=data.get("region_id")
             ).order_by('title')
-          
-
             await message.answer(_("Tuman yoki shaharni tanlang"),
                                  reply_markup=await get_districts_markup(districts, lang))
             await AdmissionState.district.set()
-            
+
         else:
             state_university = University.objects.filter(
                 district=data.get("district_id"),
                 type=OrganizationChoice.STATE_UNIVERSITY
             ).order_by('title')
-            await message.answer(_("Maktabingizni tanlang"), reply_markup=await get_university_markup(state_university, lang))
+            await message.answer(_("Davlat universitetini tanlang."), reply_markup=await get_university_markup(state_university, lang))
 
 
 @dp.message_handler(state=AdmissionState.private_university)
