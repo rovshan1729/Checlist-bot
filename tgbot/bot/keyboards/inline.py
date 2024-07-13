@@ -62,5 +62,14 @@ async def get_required_chats_markup(required_chats, user_id):
 def test_skip_inline():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=_("➡️ O'tkazib yuborish"), callback_data="skip_test")],
-        # [InlineKeyboardButton(text=_("🏁 Yakunlash"), callback_data="finished")]
     ])
+
+
+def stop_test():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Testni yakunlash", callback_data="stop_test")
+            ]
+        ]
+    )

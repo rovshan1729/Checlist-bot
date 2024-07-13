@@ -14,14 +14,23 @@ class RegisterState(StatesGroup):
 
 
 class OlympiadState(StatesGroup):
+
     choose_olympiad = State()
-    confirm_start = State()
+    choose_simulyator = State()
+    confirm_simulyator = State()
+    confirm_olimpiad = State()
     rules = State()
     test = State()
     choose = State()
     see_results = State()
     get_certificate = State()
     get_rating = State()
+
+
+class MarketState(StatesGroup):
+    main = State()
+    buy_product = State()
+
 
 
 class MainState(StatesGroup):
@@ -31,6 +40,8 @@ class MainState(StatesGroup):
 
 
 class AdmissionState(StatesGroup):
+    test_stop_check = State()
+    organization_state = State()
     full_name = State()
     birth_date = State()
     phone = State()
@@ -61,6 +72,10 @@ class AdmissionState(StatesGroup):
     friend_is_data_correct = State()
 
     about_university = State()
+    
+    state_university = State()
+    private_university = State()
+    education_center = State()
 
 
 

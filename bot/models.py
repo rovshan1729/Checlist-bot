@@ -10,6 +10,21 @@ from auditlog.registry import auditlog
 from utils.bot import set_webhook_request, get_info
 from common.models import BaseModel, Class
 from utils.validate_supported_tags import is_valid_content, validate_content
+from bot import choices
+
+
+class University(BaseModel):
+    title = models.CharField(_("Name"), max_length=255)
+    district = models.ForeignKey("common.District", on_delete=models.CASCADE,
+                                 related_name="universities")
+    type = models.CharField(_("Type"), max_length=255, choices=choices.OrganizationChoice.choices)
+
+    def clean(self):
+        if not self.title:
+            raise ValidationError(_("Title is required"))
+
+    def __str__(self):
+        return self.title
 
 
 class TelegramBot(models.Model):
@@ -44,7 +59,7 @@ class TelegramProfile(BaseModel):
 
     full_name = models.CharField(max_length=255, null=True, blank=True, verbose_name=_("Full Name"))
     phone_number = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Phone Number"))
-    birth_day = models.DateField(blank=True, null=True, verbose_name=_("Bith Day"))
+    birth_day = models.DateField(blank=True, null=True, verbose_name=_("Birth Day"))
 
     region = models.ForeignKey('common.Region', models.CASCADE, blank=True, null=True, verbose_name=_("Region"),
                                related_name="region")
@@ -55,6 +70,17 @@ class TelegramProfile(BaseModel):
 
     is_olimpic = models.BooleanField(default=False, editable=False)
     _user_data = models.JSONField(blank=True, null=True, verbose_name=_("User Data"), editable=False)
+    
+    organization = models.CharField(max_length=255, blank=True, null=True, choices=choices.OrganizationChoice.choices, verbose_name="User Organization")
+    
+    university = models.ForeignKey(University, models.CASCADE, null=True, blank=True, verbose_name=_("University"))
+    coins = models.PositiveIntegerField(default=0, blank=True, null=True, verbose_name="User Coins")
+    user_level = models.CharField(max_length=255, blank=True, null=True,
+                                  choices=choices.UserLevelChoice.choices, verbose_name="User Level")
+    total_olympic_score = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                      verbose_name="Total Olympic Score")
+    average_olympic_score = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                        verbose_name="Average Olympic Score")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.username} {self.telegram_id}"
@@ -112,9 +138,6 @@ class TelegramButton(BaseModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not is_valid_content(self.text_en) and not is_valid_content(self.text_ru) and not is_valid_content(
-                self.text_uz):
-            raise ValidationError(_("Invalid content"))
 
         if not self.title_uz:
             self.title_uz = self.title
@@ -230,6 +253,27 @@ class UserNotification(models.Model):
         verbose_name = _("User Notification")
         verbose_name_plural = _("User Notifications")
         db_table = "user_notifications"
+
+
+class Product(BaseModel):
+    title = models.CharField(max_length=255, verbose_name="Product")
+    description = models.TextField(verbose_name="Product description")
+    price = models.PositiveSmallIntegerField(default=0, verbose_name="Price")
+    photo = models.ImageField(upload_to="product_images/%Y/%m/%d/", verbose_name="Product photo")
+    class meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+
+    def __str__(self):
+        return f"{self.title} x {self.price} coins"
+
+class UserProduct(BaseModel):
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
+    user = models.ForeignKey(TelegramProfile, on_delete=models.CASCADE, related_name="user_products")
+    quantity = models.IntegerField(default=1)
+    verification_status = models.CharField(choices=choices.ShowVerificationStatusChoice.choices, blank=True, null=True,
+                                           default=choices.ShowVerificationStatusChoice.WAITING,
+                                           verbose_name="user_verification_status")
 
 
 auditlog.register(RequiredGroup)

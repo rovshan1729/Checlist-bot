@@ -12,7 +12,7 @@ from django.conf import settings
 
 from olimpic.tasks import generate_certificates
 from django.db.models import Q
-
+from bot.choices import OlimpiadaOrSimulyator
 
 @dp.message_handler(text=_("📈 Natijalar 📉"), state="*")
 async def get_results(message: types.Message, state: FSMContext):
@@ -24,7 +24,8 @@ async def get_results(message: types.Message, state: FSMContext):
         user = get_user(message.from_user.id)
         if user:
             lang = user.language
-    olympics = Olimpic.objects.filter(is_active=True).order_by('start_time', 'end_time')
+    olympics = Olimpic.objects.filter(is_active=True,
+                                      type=OlimpiadaOrSimulyator.OLIMPIADA).order_by('start_time', 'end_time')
 
     if olympics.filter(region__isnull=False).exists():
         olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
@@ -38,7 +39,7 @@ async def get_results(message: types.Message, state: FSMContext):
     markup = await get_olympics_markup(olympics, language=lang)
     await message.answer(_("Natijalar bilan tanishing"), reply_markup=markup)
     await OlimpicResultsState.olimpics.set()
-
+    
 
 @dp.message_handler(state=OlimpicResultsState.olimpics)
 async def get_result(message: types.Message, state: FSMContext):
@@ -71,7 +72,7 @@ async def get_result(message: types.Message, state: FSMContext):
         olimpic=olympic,
         correct_answers__isnull=False,
         wrong_answers__isnull=False,
-        # not_answered__isnull=False,
+        not_answered__isnull=False,
         olimpic_duration__isnull=False,
     ).order_by("-correct_answers", "wrong_answers", "not_answered", "olimpic_duration").select_related("user")
 
@@ -87,37 +88,38 @@ async def get_result(message: types.Message, state: FSMContext):
     text = _("<b>{}</b> - Natijalari\n\n").format(olympic.title)
 
     user_result = results.filter(user__telegram_id=message.from_user.id).first()
-    query_result = list(results)
+    user_olimpic = UserOlimpic.objects.filter(user__telegram_id=message.from_user.id).first()
 
     if not user_result:
         text += _("Siz bu olimpiadada ishtirok etmadingiz\n\n")
 
-    for result in results[:10]:
-        text += _(
-            "{index}) {full_name} - {correct_answers} - {wrong_answers} - {not_answered} - {olimpic_duration}\n"
-        ).format(
-            index=query_result.index(result) + 1,
-            full_name=result.user.full_name,
-            correct_answers=result.correct_answers,
-            wrong_answers=result.wrong_answers,
-            not_answered=result.not_answered or '',
-            olimpic_duration=result.olimpic_duration,
-        )
+    text = _(
+        "Ismingiz {full_name}\n✅ Toʻgʻri – {correct_answers}\n"
+        "❌ Xato – {wrong_answers}\n⌛️ Tashlab ketilgan 0{not_answered}\n🕰 {olimpic_duration}\n\n"
+        "Ballingiz - {olimpiad_points}"
+    ).format(
+        full_name=user_result.user.full_name,
+        correct_answers=user_result.correct_answers,
+        wrong_answers=user_result.wrong_answers,
+        not_answered=user_result.not_answered or '',
+        olimpic_duration=user_result.olimpic_duration,
+        olimpiad_points=user_olimpic.olympic_points,
+    )
 
-    if user_result and user_result not in results[:10]:
-        text += _("---------------------")
-        text += _(
-            "\n{index}) {full_name} - {correct_answers}/{wrong_answers}/{not_answered} - {olimpic_duration}\n"
-        ).format(
-            index=query_result.index(user_result) + 1,
-            full_name=user_result.user.full_name,
-            correct_answers=user_result.correct_answers,
-            wrong_answers=user_result.wrong_answers,
-            not_answered=user_result.not_answered or '',
-            olimpic_duration=user_result.olimpic_duration,
-        )
+    # if user_result and user_result not in results[:10]:
+    #     text += _("---------------------")
+    #     text += _(
+    #         "{index}) Ismingiz {full_name}\n✅ Toʻgʻri – {correct_answers}\n"
+    #         "❌ Xato – {wrong_answers}\n⌛️ Tashlab ketilgan 0{not_answered}\n🕰 {olimpic_duration}\n"
+    #     ).format(
+    #         index=query_result.index(user_result) + 1,
+    #         full_name=user_result.user.full_name,
+    #         correct_answers=user_result.correct_answers,
+    #         wrong_answers=user_result.wrong_answers,
+    #         not_answered=user_result.not_answered or '',
+    #         olimpic_duration=user_result.olimpic_duration,
+    #     )
 
-    text += _("\nSertificatni Yuklab olish uchun 👇 ni bosing")
     await state.update_data({"olimpic_id": olympic.id})
     await message.answer(text, reply_markup=markup, parse_mode="HTML")
     await OlimpicResultsState.olimpic.set()
@@ -136,11 +138,3 @@ async def get_result(message: types.Message, state: FSMContext):
     if not user_olimpic:
         await message.answer(_("Siz bu olimpiadada ishtirok etmadingiz"))
         return
-
-    if not user_olimpic.certificate:
-        generate_certificates.delay(user_olimpic.id)
-        await message.answer(_("Sertifikat jarayonda yaratilmoqda. Iltimos kuting."))
-        # await OlimpicResultsState.olimpic.set()
-        return
-
-    await message.answer_document(str(settings.BACK_END_URL) + user_olimpic.certificate.url, caption=_("Sertifikat"), reply_markup=main_markup())

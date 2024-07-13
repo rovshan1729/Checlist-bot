@@ -7,8 +7,11 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule, ClockedSch
 
 from auditlog.registry import auditlog
 
+import bot.models
 from common.models import BaseModel, Class
 from utils.validate_supported_tags import is_valid_content, validate_content
+
+from bot import choices
 
 
 # Create your models here.
@@ -35,6 +38,17 @@ class Olimpic(BaseModel):
     class_room = models.CharField(max_length=255, blank=True, null=True, choices=Class, verbose_name=_("Class Room"),
                                   db_index=True)
 
+    university = models.ForeignKey("bot.University", models.CASCADE, blank=True, null=True,
+                                   related_name="olimpic_universities")
+
+    type = models.CharField(max_length=25, choices=choices.OlimpiadaOrSimulyator.choices,
+                            default=choices.OlimpiadaOrSimulyator.SIMULYATOR,
+                            db_index=True,
+                            verbose_name='Type'
+                            )
+
+    point = models.PositiveIntegerField(default=1, blank=True, null=True, verbose_name='Olimpic number')
+
     def __str__(self):
         return self.title
 
@@ -42,31 +56,31 @@ class Olimpic(BaseModel):
         if not self.title:
             raise ValidationError(_("Title is required"))
 
-    #
-    #     if not self.description:
-    #         raise ValidationError(_("Description is required"))
-    #
-    #     if not is_valid_content(self.description_uz) and not is_valid_content(
-    #             self.description_ru) and not is_valid_content(self.description_en):
-    #         raise ValidationError(_("Invalid content"))
-    #
-    #     if not self.title_uz:
-    #         self.title_uz = self.title
-    #     if not self.title_ru:
-    #         self.title_ru = self.title
-    #     if not self.title_en:
-    #         self.title_en = self.title
-    #
-    #     if not self.description_uz:
-    #         self.description_uz = self.description
-    #     if not self.description_ru:
-    #         self.description_ru = self.description
-    #     if not self.description_en:
-    #         self.description_en = self.description
-    #
-    #     self.description_uz = validate_content(self.description_uz)
-    #     self.description_ru = validate_content(self.description_ru)
-    #     self.description_en = validate_content(self.description_en)
+        #
+        #     if not self.description:
+        #         raise ValidationError(_("Description is required"))
+        #
+        #     if not is_valid_content(self.description_uz) and not is_valid_content(
+        #             self.description_ru) and not is_valid_content(self.description_en):
+        #         raise ValidationError(_("Invalid content"))
+        #
+        #     if not self.title_uz:
+        #         self.title_uz = self.title
+        #     if not self.title_ru:
+        #         self.title_ru = self.title
+        #     if not self.title_en:
+        #         self.title_en = self.title
+        #
+        #     if not self.description_uz:
+        #         self.description_uz = self.description
+        #     if not self.description_ru:
+        #         self.description_ru = self.description
+        #     if not self.description_en:
+        #         self.description_en = self.description
+        #
+        #     self.description_uz = validate_content(self.description_uz)
+        #     self.description_ru = validate_content(self.description_ru)
+        #     self.description_en = validate_content(self.description_en)
 
         # schedule, created = ClockedSchedule.objects.get_or_create(
         #     clocked_time=self.certificate_generate,
@@ -87,7 +101,9 @@ class Question(BaseModel):
     olimpic = models.ForeignKey(Olimpic, models.CASCADE, related_name="questions")
 
     text = RichTextField(verbose_name=_("Text"))
-    duration = models.PositiveIntegerField(default=0, verbose_name=_("Duration (seconds)"))
+    duration = models.PositiveIntegerField(default=60, verbose_name=_("Duration (seconds)"))
+    level = models.CharField(max_length=255, choices=choices.UserLevelChoice.choices,
+                             blank=True, null=True, db_index=True, verbose_name="Question Level")
     image = models.ImageField(upload_to="questions", null=True, blank=True)
     file_content = models.FileField(upload_to="questions", null=True, blank=True)
 
@@ -98,9 +114,9 @@ class Question(BaseModel):
         if not self.text:
             raise ValidationError(_("Text is required"))
 
-        if not is_valid_content(self.text_uz) and not is_valid_content(self.text_ru) and not is_valid_content(
-                self.text_en):
-            raise ValidationError(_("Invalid content"))
+        # if not is_valid_content(self.text_uz) and not is_valid_content(self.text_ru) and not is_valid_content(
+        #         self.text_en):
+        #     raise ValidationError(_("Invalid content"))
 
         if not self.text_uz:
             self.text_uz = self.text
@@ -133,9 +149,9 @@ class Option(BaseModel):
         if not self.title:
             raise ValidationError(_("Title is required"))
 
-        if not is_valid_content(self.title_uz) and not is_valid_content(self.title_ru) and not is_valid_content(
-                self.title_en):
-            raise ValidationError(_("Invalid content"))
+        # if not is_valid_content(self.title_uz) and not is_valid_content(self.title_ru) and not is_valid_content(
+        #         self.title_en):
+        #     raise ValidationError(_("Invalid content"))
 
         if not self.title_uz:
             self.title_uz = self.title
@@ -164,7 +180,8 @@ class UserOlimpic(BaseModel):
     wrong_answers = models.PositiveIntegerField(null=True, blank=True)
     not_answered = models.PositiveIntegerField(null=True, blank=True)
 
-    certificate = models.FileField(upload_to="certificates", null=True, blank=True)
+    olympic_points = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                 verbose_name="User Olympic Points")
 
     def save(self, *args, **kwargs):
         return super(UserOlimpic, self).save(*args, **kwargs)
@@ -202,9 +219,6 @@ class UserQuestionOption(BaseModel):
 
     def __str__(self):
         return f"{self.user_question} - {self.option} - {self.order}"
-
-
-
 
 
 auditlog.register(Olimpic)

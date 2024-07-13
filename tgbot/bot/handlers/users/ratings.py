@@ -22,6 +22,7 @@ from utils.bot import get_model_queryset
 from utils.bot import get_object_value, parse_telegram_message
 from django.conf import settings
 from django.db.models import Q
+from bot.choices import OlimpiadaOrSimulyator
 
 
 async def olimpi_rating_func(tg_id, olimpic, region, district, school, class_room):
@@ -43,8 +44,8 @@ async def olimpi_rating_func(tg_id, olimpic, region, district, school, class_roo
         wrong_answers__isnull=False,
         end_time__isnull=False,
         olimpic_duration__isnull=False,
-        # not_answered__isnull=False,
-    ).order_by("-correct_answers", "wrong_answers", "not_answered", "olimpic_duration").select_related("user")
+        not_answered__isnull=False,
+    ).order_by("-olympic_points", "-correct_answers", "wrong_answers", "not_answered", "olimpic_duration").select_related("user")
 
     if region is not None:
         results = results.filter(user__region=region)
@@ -71,7 +72,9 @@ async def olimpi_rating_func(tg_id, olimpic, region, district, school, class_roo
 
     for result in results[:10]:
         text += _(
-            "{index}) {full_name} - {correct_answers} - {wrong_answers} - {not_answered} - {olimpic_duration}\n"
+            "{index}) {full_name}\n✅ Toʻgʻri – {correct_answers}\n"
+            "❌ Xato – {wrong_answers}\n⌛️ Tashlab ketilgan 0{not_answered}\n🕰 {olimpic_duration}\n\n"
+            "O'rtancha ball {olimpiada_points}\n\n"
         ).format(
             index=query_result.index(result) + 1,
             full_name=result.user.full_name,
@@ -79,12 +82,14 @@ async def olimpi_rating_func(tg_id, olimpic, region, district, school, class_roo
             wrong_answers=result.wrong_answers,
             not_answered=result.not_answered or '',
             olimpic_duration=result.olimpic_duration,
+            olimpiada_points=result.olympic_points,
         )
 
     if user_result and user_result not in results[:10]:
         text += _("---------------------")
         text += _(
-            "\n{index}) {full_name} - {correct_answers}/{wrong_answers}/{not_answered} - {olimpic_duration}\n"
+             "{index}) {full_name}\n✅ Toʻgʻri – {correct_answers}\n"
+            "❌ Xato – {wrong_answers}\n⌛️ Tashlab ketilgan 0{not_answered}\n🕰 {olimpic_duration}\n"
         ).format(
             index=query_result.index(user_result) + 1,
             full_name=user_result.user.full_name,
@@ -106,7 +111,8 @@ async def get_results(message: types.Message, state: FSMContext):
         user = get_user(message.from_user.id)
         if user:
             lang = user.language
-    olympics = Olimpic.objects.filter(is_active=True).order_by('start_time', 'end_time')
+    olympics = Olimpic.objects.filter(is_active=True,
+                                      type=OlimpiadaOrSimulyator.OLIMPIADA).order_by('start_time', 'end_time')
 
     if olympics.filter(region__isnull=False).exists():
         olympics = olympics.filter(Q(region=tg_user.region) | Q(region__isnull=True))
@@ -158,7 +164,7 @@ async def get_resgions(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=OlimpicRatingState.region)
 async def get_districts(message: types.Message, state: FSMContext):
-    if message.text == _("🔙 Orqaga"):
+    if message.text == "🔙 Orqaga":
         await state.update_data({"olimpic_id": None})
         tg_user = get_user(message.from_user.id)
         olympics = Olimpic.objects.filter(is_active=True).order_by('start_time', 'end_time')
@@ -210,7 +216,7 @@ async def get_schools(message: types.Message, state: FSMContext):
         await message.answer(_("Viloyatlardan birini tanlang"),
                              reply_markup=await get_rating_regions_markup(Region.objects.all()))
         await OlimpicRatingState.region.set()
-        return
+        # return
 
     data = await state.get_data()
     lang = data.get("language")
