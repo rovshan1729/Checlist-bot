@@ -6,7 +6,7 @@ from tgbot.bot.utils import get_user
 from tgbot.bot.loader import dp
 
 
-@dp.message_handler(commands=["delolimpic"])
+@dp.message_handler(commands=["delolimpic"], state="*")
 async def del_olimpic(message: types.Message):
     user = get_user(message.from_user.id)
 

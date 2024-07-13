@@ -65,3 +65,11 @@ def test_skip_inline():
     ])
 
 
+def stop_test():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Testni yakunlash", callback_data="stop_test")
+            ]
+        ]
+    )

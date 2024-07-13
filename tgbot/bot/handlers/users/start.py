@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from bot.models import TelegramProfile, University
 from bot.choices import OrganizationChoice
 from common.models import Region, District, School, Class
-from tgbot.bot.keyboards.inline import languages_markup, get_check_button
+from tgbot.bot.keyboards.inline import languages_markup, get_check_button, stop_test
 from tgbot.bot.keyboards.reply import (phone_keyboard, main_markup, get_regions_markup, get_districts_markup, registration, back, generate_list_markup, get_university_markup,
                                        get_schools_markup, generate_start_markup, classes, main_menu_markup)
 from tgbot.bot.loader import dp, bot
@@ -19,6 +19,8 @@ from tgbot.bot.loader import gettext as _
 from tgbot.bot.states.main import AdmissionState
 from tgbot.bot.utils import get_user, get_lang
 from utils.subscription import get_result
+
+from olimpic.models import UserQuestion
 
 
 async def do_start(message: types.Message, state: FSMContext):
@@ -56,10 +58,13 @@ async def bot_start(message: types.Message, state: FSMContext):
     user = get_user(message.from_user.id)
     data = await state.get_data()
     if user.is_olimpic:
-        previous_state = data.get('previous_state')
-        if previous_state:
-            await state.set_state(previous_state)
-        await message.answer(_("Siz hozirda olimpiada jarayonidasiz. Iltimos, olimpiadani tugating."))
+        await message.answer(f"Siz hozirda test jarayonidasiz!\nIltimos, testni tugating.\n\n"
+                             f"Agar testan chiqish xolasengiz pasti tugmani bosing.\n"
+                             f"<b>Testan chiqsangiz 0 ball olasiz!</b>",
+                             reply_markup=stop_test(),
+                             parse_mode='HTML')
+        await AdmissionState.test_stop_check.set()
+
     else:
         await state.finish()
 
@@ -78,6 +83,35 @@ async def bot_start(message: types.Message, state: FSMContext):
                 await do_start(message, state)
         else:
             await do_start(message, state)
+
+
+@dp.callback_query_handler(lambda call: call.data == "stop_test", state=AdmissionState.test_stop_check)
+async def get_stop_test(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    lang = data.get("language")
+    if not lang:
+        user = get_user(call.from_user.id)
+        if user:
+            lang = user.language
+
+    user = get_user(call.from_user.id)
+    user.is_olimpic = False
+    user.save(
+        update_fields=["is_olimpic"]
+    )
+    last_question = UserQuestion.objects.filter(user=user).last()
+    if last_question:
+        try:
+            user_id = last_question.user.telegram_id
+            if last_question.message_id:
+                await bot.delete_message(user_id, last_question.message_id)
+        except Exception as e:
+            print(e)
+    await call.message.answer(f"Test toxtatildi\n"
+                              f"Bosh menyu",
+                              reply_markup=main_markup(lang))
+    await call.message.delete()
+
 
 
 @dp.callback_query_handler(text="check_subs")
@@ -183,14 +217,14 @@ async def get_user_fullname(message: types.Message, state: FSMContext):
 @dp.message_handler(state=AdmissionState.self_introduction)
 async def self_introduction(message: types.Message, state: FSMContext):
     choices = OrganizationChoice.labels
-    is_correct = [word for word in message.text.split(' ') if word.isalpha()]
+    is_correct = [word for word in message.text.split(' ') if word.isalpha() and len(word) <= 20]
 
     if message.text == "🔙 Orqaga":
         await message.answer("Qayerda o'qisiz?",
                              reply_markup=await generate_start_markup(choices))
         await AdmissionState.full_name.set()
         
-    elif message.text and 2 <= len(is_correct) <= 3:
+    elif message.text and 2 <= len(is_correct) <= 3 :
         await state.update_data({"self_introduction": message.text})
         await message.answer(_('Telefon raqamingizni quyidagi tugmani bosgan holda yuboring.'),
                              reply_markup=phone_keyboard)

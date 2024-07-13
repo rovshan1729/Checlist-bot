@@ -74,9 +74,14 @@ class TelegramProfile(BaseModel):
     organization = models.CharField(max_length=255, blank=True, null=True, choices=choices.OrganizationChoice.choices, verbose_name="User Organization")
     
     university = models.ForeignKey(University, models.CASCADE, null=True, blank=True, verbose_name=_("University"))
-
     coins = models.PositiveIntegerField(default=0, blank=True, null=True, verbose_name="User Coins")
-    
+    user_level = models.CharField(max_length=255, blank=True, null=True,
+                                  choices=choices.UserLevelChoice.choices, verbose_name="User Level")
+    total_olympic_score = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                      verbose_name="Total Olympic Score")
+    average_olympic_score = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                        verbose_name="Average Olympic Score")
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} {self.username} {self.telegram_id}"
 
@@ -133,9 +138,6 @@ class TelegramButton(BaseModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not is_valid_content(self.text_en) and not is_valid_content(self.text_ru) and not is_valid_content(
-                self.text_uz):
-            raise ValidationError(_("Invalid content"))
 
         if not self.title_uz:
             self.title_uz = self.title

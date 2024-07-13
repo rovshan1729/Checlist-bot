@@ -38,7 +38,8 @@ class UserOlimpicResource(resources.ModelResource):
 @admin.register(models.UserOlimpic)
 class UserOlimpicAdmin(ImportExportModelAdmin, TabbedTranslationAdmin):
     resource_class = UserOlimpicResource
-    list_display = ('id', 'olimpic', 'user', 'olimpic_duration', 'correct_answers', 'wrong_answers', 'not_answered')
+    list_display = ('id', 'olimpic', 'user', 'olimpic_duration', 'correct_answers',
+                    'wrong_answers', 'not_answered', 'olympic_points')
     list_display_links = ('id', 'olimpic', 'user')
     search_fields = ('olimpic__title', 'user__full_name')
     list_filter = ('olimpic', 'user')
@@ -73,7 +74,7 @@ class OlimpicCertifeicateInline(admin.TabularInline):
 
 @admin.register(models.Olimpic)
 class OlimpicAdmin(TranslationRequiredMixin, TabbedTranslationAdmin):
-    list_display = ("id","title",'start_time','end_time', "is_active")
+    list_display = ("id","title",'start_time','end_time', "is_active", "point")
     list_display_links = ("id","title",)
     search_fields = ("title",)
     inlines = [OlimpicCertifeicateInline]
@@ -152,7 +153,7 @@ class QuestionResource(resources.ModelResource):
 @admin.register(models.Question)
 class QuestionAdmin(ImportExportModelAdmin, TranslationRequiredMixin, TabbedTranslationAdmin):
     resource_class = QuestionResource
-    list_display = ("id","text","olimpic", "duration")
+    list_display = ("id","text","olimpic", "duration", "level")
     list_display_links = ("id","text",)
     search_fields = ("text",'olimpic__title')
     list_filter = ("olimpic",)

@@ -40,6 +40,7 @@ class MainState(StatesGroup):
 
 
 class AdmissionState(StatesGroup):
+    test_stop_check = State()
     organization_state = State()
     full_name = State()
     birth_date = State()

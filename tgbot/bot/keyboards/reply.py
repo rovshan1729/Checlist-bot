@@ -203,8 +203,8 @@ async def get_olympics_markup(olympics, language="uz"):
 
 async def get_result_markup(is_end_time: bool):
     markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    if is_end_time:
-        markup.add(KeyboardButton(text=_("⬇️ Sertifikatni yuklab olish")))
+    # if is_end_time:
+    #     markup.add(KeyboardButton(text=_("⬇️ Sertifikatni yuklab olish")))
     markup.add(KeyboardButton(text=_("🔙 Orqaga")))
     return markup
 

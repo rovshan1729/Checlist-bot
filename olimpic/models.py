@@ -47,6 +47,8 @@ class Olimpic(BaseModel):
                             verbose_name='Type'
                             )
 
+    point = models.PositiveIntegerField(default=1, blank=True, null=True, verbose_name='Olimpic number')
+
     def __str__(self):
         return self.title
 
@@ -54,31 +56,31 @@ class Olimpic(BaseModel):
         if not self.title:
             raise ValidationError(_("Title is required"))
 
-    #
-    #     if not self.description:
-    #         raise ValidationError(_("Description is required"))
-    #
-    #     if not is_valid_content(self.description_uz) and not is_valid_content(
-    #             self.description_ru) and not is_valid_content(self.description_en):
-    #         raise ValidationError(_("Invalid content"))
-    #
-    #     if not self.title_uz:
-    #         self.title_uz = self.title
-    #     if not self.title_ru:
-    #         self.title_ru = self.title
-    #     if not self.title_en:
-    #         self.title_en = self.title
-    #
-    #     if not self.description_uz:
-    #         self.description_uz = self.description
-    #     if not self.description_ru:
-    #         self.description_ru = self.description
-    #     if not self.description_en:
-    #         self.description_en = self.description
-    #
-    #     self.description_uz = validate_content(self.description_uz)
-    #     self.description_ru = validate_content(self.description_ru)
-    #     self.description_en = validate_content(self.description_en)
+        #
+        #     if not self.description:
+        #         raise ValidationError(_("Description is required"))
+        #
+        #     if not is_valid_content(self.description_uz) and not is_valid_content(
+        #             self.description_ru) and not is_valid_content(self.description_en):
+        #         raise ValidationError(_("Invalid content"))
+        #
+        #     if not self.title_uz:
+        #         self.title_uz = self.title
+        #     if not self.title_ru:
+        #         self.title_ru = self.title
+        #     if not self.title_en:
+        #         self.title_en = self.title
+        #
+        #     if not self.description_uz:
+        #         self.description_uz = self.description
+        #     if not self.description_ru:
+        #         self.description_ru = self.description
+        #     if not self.description_en:
+        #         self.description_en = self.description
+        #
+        #     self.description_uz = validate_content(self.description_uz)
+        #     self.description_ru = validate_content(self.description_ru)
+        #     self.description_en = validate_content(self.description_en)
 
         # schedule, created = ClockedSchedule.objects.get_or_create(
         #     clocked_time=self.certificate_generate,
@@ -100,6 +102,8 @@ class Question(BaseModel):
 
     text = RichTextField(verbose_name=_("Text"))
     duration = models.PositiveIntegerField(default=60, verbose_name=_("Duration (seconds)"))
+    level = models.CharField(max_length=255, choices=choices.UserLevelChoice.choices,
+                             blank=True, null=True, db_index=True, verbose_name="Question Level")
     image = models.ImageField(upload_to="questions", null=True, blank=True)
     file_content = models.FileField(upload_to="questions", null=True, blank=True)
 
@@ -131,7 +135,6 @@ class Question(BaseModel):
 class OlimpicCertifeicate(BaseModel):
     olimpic = models.OneToOneField(Olimpic, models.CASCADE, related_name="certificate")
     certificate = models.ImageField(upload_to="certificates", null=True, blank=True)
-
 
 
 class Option(BaseModel):
@@ -177,7 +180,8 @@ class UserOlimpic(BaseModel):
     wrong_answers = models.PositiveIntegerField(null=True, blank=True)
     not_answered = models.PositiveIntegerField(null=True, blank=True)
 
-    certificate = models.FileField(upload_to="certificates", null=True, blank=True)
+    olympic_points = models.PositiveIntegerField(default=0, blank=True, null=True,
+                                                 verbose_name="User Olympic Points")
 
     def save(self, *args, **kwargs):
         return super(UserOlimpic, self).save(*args, **kwargs)

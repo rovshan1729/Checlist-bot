@@ -16,3 +16,10 @@ class ShowVerificationStatusChoice(models.TextChoices):
 class OlimpiadaOrSimulyator(models.TextChoices):
     OLIMPIADA = "Olimpiada", "Olimpiada"
     SIMULYATOR = "Simulyator", "Simulyator"
+
+
+class UserLevelChoice(models.TextChoices):
+    JUNIOR = "Junior", "Junior"
+    SENIOR = "Senior", "Senior"
+    MIDDLE = "Middle", "Middle"
+    SUMULATOR = "Simulyator", "Simulyator"
