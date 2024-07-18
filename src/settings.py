@@ -174,4 +174,6 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     'https://globaledubot.uicgroup.tech',
     "https://py-olimpiada.uicgroup.tech",
+    'https://admin.olimpiadalar.uz/',
+    'http://admin.olimpiadalar.uz',
 ]
