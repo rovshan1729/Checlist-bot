@@ -43,9 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tgbot',
-    'bot',
-    'common',
-    'olimpic',
 
     ###
     "rest_framework",

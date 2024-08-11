@@ -2,7 +2,7 @@ from aiogram import types
 from typing import Tuple, Any
 
 from aiogram.contrib.middlewares.i18n import I18nMiddleware
-from bot.models import TelegramProfile
+from tgbot.models import TelegramProfile
 
 # LANG_STORAGE = {}
 LANGS = ["ru", "en", "uz"]
@@ -23,9 +23,9 @@ class Localization(I18nMiddleware):
             user_data = TelegramProfile.objects.filter(telegram_id=user.id).first()
             language_code = user.language_code
             if user_data is None:
-                TelegramProfile.objects.create(telegram_id=user.id, first_name=user.first_name, last_name=user.last_name, username=user.username, language=user.language_code, full_name=user.full_name)
+                TelegramProfile.objects.create(telegram_id=user.id, full_name=user.full_name)
             else:
-                language_code = user_data.language
+                pass
         *_, data = args
         language = data['locale'] = language_code
         return language
