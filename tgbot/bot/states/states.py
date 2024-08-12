@@ -19,8 +19,9 @@ class FirstSection(StatesGroup):
     s1q12 = State()
     s1q13 = State()
     s1q14 = State()
-    
+    final_s1 = State()
 
+    
 class SecondSection(StatesGroup):
     s2q1 = State()
     s2q2 = State()
@@ -35,3 +36,19 @@ class SecondSection(StatesGroup):
     s2q11 = State()
     s2q12 = State()
     s2q13 = State()
+    final_s2 = State()
+    
+class ThirdSection(StatesGroup):
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    s3q1 = State()
+    
+  
