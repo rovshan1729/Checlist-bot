@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text, Regexp
+from aiogram.dispatcher.filters import Regexp
 
 from tgbot.bot.states.states import (
     Intro, 
@@ -11,6 +11,8 @@ from tgbot.bot.states.states import (
     FourSection,
     FifthSection,
     SixSection,
+    SevenSection,
+    TextQuestionSection,
     )
 from tgbot.bot.loader import dp
 from tgbot.models import Section, SectionNumberChoices 
@@ -31,55 +33,75 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
     data = await state.get_data()
     total_ball = data.get('total_ball', 0)
     questions = data.get('questions', [])
+    
+    if current_state == Intro.name.state:
+        previous_state == Intro.branch
+        text = f"<strong>Здравствуйте! Какой филиал вы проверяете?</strong>"
+    
+    elif current_state == FirstSection.s1q1.state:
+        previous_state == Intro.name
+        text = f"<strong>Введите полное имя проверяющего.</strong>"
 
-    if current_state == FirstSection.s1q2.state:
+    elif current_state == FirstSection.s1q2.state:
         previous_state = FirstSection.s1q1
         total_ball -= int(data.get('s1q1', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q3.state:
         previous_state = FirstSection.s1q2
         total_ball -= int(data.get('s1q2', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q4.state:
         previous_state = FirstSection.s1q3
         total_ball -= int(data.get('s1q3', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q5.state:
         previous_state = FirstSection.s1q4
         total_ball -= int(data.get('s1q4', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q6.state:
         previous_state = FirstSection.s1q5
         total_ball -= int(data.get('s1q5', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q7.state:
         previous_state = FirstSection.s1q6
         total_ball -= int(data.get('s1q6', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q8.state:
         previous_state = FirstSection.s1q7
         total_ball -= int(data.get('s1q7', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q9.state:
         previous_state = FirstSection.s1q8
         total_ball -= int(data.get('s1q8', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q10.state:
         previous_state = FirstSection.s1q9
         total_ball -= int(data.get('s1q9', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q11.state:
         previous_state = FirstSection.s1q10
         total_ball -= int(data.get('s1q10', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q12.state:
         previous_state = FirstSection.s1q11
         total_ball -= int(data.get('s1q11', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q13.state:
         previous_state = FirstSection.s1q12
         total_ball -= int(data.get('s1q12', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == FirstSection.s1q14.state:
         previous_state = FirstSection.s1q13
         total_ball -= int(data.get('s1q13', 0))
@@ -90,139 +112,180 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
         """
     elif current_state == SecondSection.s2q1.state:
         previous_state = FirstSection.s1q14
-        total_ball = int(data.get('s1q14', 0))
+        total_ball = int(data.get('s1q13', 0))
         section = Section.objects.filter(type=SectionNumberChoices.FIRST).first()
         questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[13].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q2.state:
         previous_state = SecondSection.s2q1
         total_ball -= int(data.get('s2q1', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q3.state:
         previous_state = SecondSection.s2q2
         total_ball -= int(data.get('s2q2', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q4.state:
         previous_state = SecondSection.s2q3
         total_ball -= int(data.get('s2q3', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q5.state:
         previous_state = SecondSection.s2q4
         total_ball -= int(data.get('s2q4', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q6.state:
         previous_state = SecondSection.s2q5
         total_ball -= int(data.get('s2q5', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q7.state:
         previous_state = SecondSection.s2q6
         total_ball -= int(data.get('s2q6', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q8.state:
         previous_state = SecondSection.s2q7
         total_ball -= int(data.get('s2q7', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q9.state:
         previous_state = SecondSection.s2q8
         total_ball -= int(data.get('s2q8', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q10.state:
         previous_state = SecondSection.s2q9
         total_ball -= int(data.get('s2q9', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q11.state:
         previous_state = SecondSection.s2q10
         total_ball -= int(data.get('s2q10', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q12.state:
         previous_state = SecondSection.s2q11
         total_ball -= int(data.get('s2q11', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == SecondSection.s2q13.state:
         previous_state = SecondSection.s2q12
         total_ball -= int(data.get('s2q12', 0))
-        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, 
+        пожалуйста, от 0 до 100 баллов.'
+        
+        """
+        Next Section
+        """
+        
     elif current_state == ThirdSection.s3q1.state:
         previous_state = SecondSection.s2q13
-        total_ball = int(data.get('s2q13', 0))
+        total_ball = int(data.get('s2q12', 0))
         section = Section.objects.filter(type=SectionNumberChoices.SECOND).first()
         questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[12].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q2.state:
         previous_state = ThirdSection.s3q1
         total_ball -= int(data.get('s3q1', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q3.state:
         previous_state = ThirdSection.s3q2
         total_ball -= int(data.get('s3q2', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q4.state:
         previous_state = ThirdSection.s3q3
         total_ball -= int(data.get('s3q3', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q5.state:
         previous_state = ThirdSection.s3q4
         total_ball -= int(data.get('s3q4', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q6.state:
         previous_state = ThirdSection.s3q5
         total_ball -= int(data.get('s3q5', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q7.state:
         previous_state = ThirdSection.s3q6
         total_ball -= int(data.get('s3q6', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q8.state:
         previous_state = ThirdSection.s3q7
         total_ball -= int(data.get('s3q7', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q9.state:
         previous_state = ThirdSection.s3q8
         total_ball -= int(data.get('s3q8', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q10.state:
         previous_state = ThirdSection.s3q9
         total_ball -= int(data.get('s3q9', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q11.state:
         previous_state = ThirdSection.s3q10
         total_ball -= int(data.get('s3q10', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q12.state:
         previous_state = ThirdSection.s3q11
         total_ball -= int(data.get('s3q11', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q13.state:
         previous_state = ThirdSection.s3q12
         total_ball -= int(data.get('s3q12', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q14.state:
         previous_state = ThirdSection.s3q13
         total_ball -= int(data.get('s3q13', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[12].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q15.state:
         previous_state = ThirdSection.s3q14
         total_ball -= int(data.get('s3q14', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[13].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q16.state:
         previous_state = ThirdSection.s3q15
         total_ball -= int(data.get('s3q15', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[14].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q17.state:
         previous_state = ThirdSection.s3q16
         total_ball -= int(data.get('s3q16', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[15].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q18.state:
         previous_state = ThirdSection.s3q17
         total_ball -= int(data.get('s3q17', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[16].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q19.state:
         previous_state = ThirdSection.s3q18
         total_ball -= int(data.get('s3q18', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[17].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q20.state:
         previous_state = ThirdSection.s3q19
         total_ball -= int(data.get('s3q19', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[18].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     elif current_state == ThirdSection.s3q21.state:
         previous_state = ThirdSection.s3q20
         total_ball -= int(data.get('s3q20', 0))
@@ -233,14 +296,329 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
         """
     elif current_state == FourSection.s4q1.state:
         previous_state = ThirdSection.s3q21
-        total_ball = int(data.get('s3q21', 0))
+        total_ball = int(data.get('s3q20', 0))
         section = Section.objects.filter(type=SectionNumberChoices.THIRD).first()
         questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[20].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
-    elif current_state == ThirdSection.s3q22.state:
-        previous_state = ThirdSection.s3q1
-        total_ball -= int(data.get('s3q1', 0))
+        
+    elif current_state == FourSection.s4q2.state:
+        previous_state = FourSection.s4q1
+        total_ball -= int(data.get('s4q1', 0))
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q3.state:
+        previous_state = FourSection.s4q2
+        total_ball -= int(data.get('s4q2', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q4.state:
+        previous_state = FourSection.s4q3
+        total_ball -= int(data.get('s4q3', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q5.state:
+        previous_state = FourSection.s4q4
+        total_ball -= int(data.get('s4q4', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q6.state:
+        previous_state = FourSection.s4q5
+        total_ball -= int(data.get('s4q5', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q7.state:
+        previous_state = FourSection.s4q6
+        total_ball -= int(data.get('s4q6', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q8.state:
+        previous_state = FourSection.s4q7
+        total_ball -= int(data.get('s4q7', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q9.state:
+        previous_state = FourSection.s4q8
+        total_ball -= int(data.get('s4q8', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q10.state:
+        previous_state = FourSection.s4q9
+        total_ball -= int(data.get('s4q9', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q11.state:
+        previous_state = FourSection.s4q10
+        total_ball -= int(data.get('s4q10', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q12.state:
+        previous_state = FourSection.s4q11
+        total_ball -= int(data.get('s4q11', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q13.state:
+        previous_state = FourSection.s4q12
+        total_ball -= int(data.get('s4q12', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FourSection.s4q14.state:
+        previous_state = FourSection.s4q13
+        total_ball -= int(data.get('s4q13', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[12].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+        """
+        Next Section
+        """
+        
+    elif current_state == FifthSection.s5q1.state:
+        previous_state = FourSection.s4q14
+        total_ball = int(data.get('s4q13', 0))
+        section = Section.objects.filter(type=SectionNumberChoices.FOUR).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data("questions")
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[13].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+    
+    elif current_state == FifthSection.s5q2.state:
+        previous_state = FifthSection.s5q1
+        total_ball -= int(data.get('s5q1', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q3.state:
+        previous_state = FifthSection.s5q2
+        total_ball -= int(data.get('s5q2', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q4.state:
+        previous_state = FifthSection.s5q3
+        total_ball -= int(data.get('s5q3', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q5.state:
+        previous_state = FifthSection.s5q4
+        total_ball -= int(data.get('s5q4', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q6.state:
+        previous_state = FifthSection.s5q5
+        total_ball -= int(data.get('s5q5', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q7.state:
+        previous_state = FifthSection.s5q6
+        total_ball -= int(data.get('s5q6', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q8.state:
+        previous_state = FifthSection.s5q7
+        total_ball -= int(data.get('s5q7', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q9.state:
+        previous_state = FifthSection.s5q8
+        total_ball -= int(data.get('s5q8', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q10.state:
+        previous_state = FifthSection.s5q9
+        total_ball -= int(data.get('s5q9', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q11.state:
+        previous_state = FifthSection.s5q10
+        total_ball -= int(data.get('s5q10', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q12.state:
+        previous_state = FifthSection.s5q11
+        total_ball -= int(data.get('s5q11', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q13.state:
+        previous_state = FifthSection.s5q12
+        total_ball -= int(data.get('s5q12', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q14.state:
+        previous_state = FifthSection.s5q13
+        total_ball -= int(data.get('s5q13', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[12].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q15.state:
+        previous_state = FifthSection.s5q14
+        total_ball -= int(data.get('s5q14', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[13].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q16.state:
+        previous_state = FifthSection.s5q15
+        total_ball -= int(data.get('s5q15', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[14].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q17.state:
+        previous_state = FifthSection.s5q16
+        total_ball -= int(data.get('s5q16', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[15].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q18.state:
+        previous_state = FifthSection.s5q17
+        total_ball -= int(data.get('s5q17', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[16].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q19.state:
+        previous_state = FifthSection.s5q18
+        total_ball -= int(data.get('s5q18', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[17].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == FifthSection.s5q20.state:
+        previous_state = FifthSection.s5q19
+        total_ball -= int(data.get('s5q19', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[18].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+        """
+        Next Section
+        """
+        
+    elif current_state == SixSection.s6q1.state:
+        previous_state = FifthSection.s5q20
+        total_ball = int(data.get('s5q19', 0))
+        section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[19].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q2.state:
+        previous_state = SixSection.s6q1
+        total_ball -= int(data.get('s6q1', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q3.state:
+        previous_state = SixSection.s6q2
+        total_ball -= int(data.get('s6q2', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q4.state:
+        previous_state = SixSection.s6q3
+        total_ball -= int(data.get('s6q3', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q5.state:
+        previous_state = SixSection.s6q4
+        total_ball -= int(data.get('s6q4', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q6.state:
+        previous_state = SixSection.s6q5
+        total_ball -= int(data.get('s6q5', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q7.state:
+        previous_state = SixSection.s6q6
+        total_ball -= int(data.get('s6q6', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q8.state:
+        previous_state = SixSection.s6q7
+        total_ball -= int(data.get('s6q7', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SixSection.s6q9.state:
+        previous_state = SixSection.s6q8
+        total_ball -= int(data.get('s6q8', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+        """
+        Next Section
+        """
+        
+    elif current_state == SevenSection.s7q1.state:
+        previous_state = SixSection.s6q9
+        total_ball = int(data.get('s6q8', 0))
+        section = Section.objects.filter(type=SectionNumberChoices.SIX).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q2.state:
+        previous_state = SevenSection.s7q1
+        total_ball -= int(data.get('s7q1', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q3.state:
+        previous_state = SevenSection.s7q2
+        total_ball -= int(data.get('s7q2', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q4.state:
+        previous_state = SevenSection.s7q3
+        total_ball -= int(data.get('s7q3', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q5.state:
+        previous_state = SevenSection.s7q4
+        total_ball -= int(data.get('s7q4', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q6.state:
+        previous_state = SevenSection.s7q5
+        total_ball -= int(data.get('s7q5', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q7.state:
+        previous_state = SevenSection.s7q6
+        total_ball -= int(data.get('s7q6', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q8.state:
+        previous_state = SevenSection.s7q7
+        total_ball -= int(data.get('s7q7', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q9.state:
+        previous_state = SevenSection.s7q8
+        total_ball -= int(data.get('s7q8', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q10.state:
+        previous_state = SevenSection.s7q9
+        total_ball -= int(data.get('s7q9', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == SevenSection.s7q11.state:
+        previous_state = SevenSection.s7q10
+        total_ball -= int(data.get('s7q10', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        """
+        Next Section
+        """
+    elif current_state == TextQuestionSection.t1q1.state:
+        previous_state = SevenSection.s7q11
+        section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
+        total_ball = int(data.get('s7q10', 0))
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == TextQuestionSection.t1q2.state:
+        previous_state = TextQuestionSection.t1q1
+        t1q1 = ""
+        await state.update_data(t1q1=t1q1)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == TextQuestionSection.t1q3.state:
+        previous_state = TextQuestionSection.t1q2
+        section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions)
+        t1q1 = ""
+        await state.update_data(t1q1=t1q1)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
+    elif current_state == TextQuestionSection.t1q4.state:
+        previous_state = TextQuestionSection.t1q3
+        t1q1 = ""
+        await state.update_data(t1q3=t1q1)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        
     else:
         await callback_query.message.answer("Вы вернулись в главное меню.\nНажмите /start")
         await state.finish()
@@ -586,7 +964,7 @@ async def s1q14_handler(message: types.Message, state: FSMContext):
             await state.update_data(first_section_result=first_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {round(first_section_result), 1}% из 20% общего\n\n'
+                     f'Результат {first_section_result}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await FirstSection.next()
@@ -909,7 +1287,7 @@ async def s2q13_handler(message: types.Message, state: FSMContext):
             await state.update_data(second_section_result=second_section_result)
            
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {round(second_section_result), 1}% из 20% общего\n\n'
+                     f'Результат {second_section_result}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             await SecondSection.next()
             
@@ -1375,10 +1753,10 @@ async def s3q21_handler(message: types.Message, state: FSMContext):
             await state.update_data(third_section_result=third_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {round(third_section_result), 1}% из 20% общего\n\n'
+                     f'Результат {third_section_result}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
-            await FirstSection.next()
+            await ThirdSection.next()
             
         else:
             await message.answer("Ошибка! Баллы должны быть между 0 и 100.")    
@@ -1405,6 +1783,28 @@ async def final_s3_handler(message: types.Message, state: FSMContext):
         await FourSection.s4q1.set()
     else:
         await message.answer("Нажмите /next чтобы продолжить")
+        
+
+@dp.message_handler(state=FourSection.s4q1)
+async def s4q1_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s4q1=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await FourSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
         
         
 @dp.message_handler(state=FourSection.s4q2)
@@ -1675,10 +2075,10 @@ async def s4q14_handler(message: types.Message, state: FSMContext):
             await state.update_data(four_section_result=four_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {round(four_section_result), 1}% из 20% общего\n\n'
+                     f'Результат {four_section_result}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
-            await FirstSection.next()
+            await FourSection.next()
             
         else:
             await message.answer("Ошибка! Баллы должны быть между 0 и 100.")    
@@ -2130,186 +2530,18 @@ async def s5q20_handler(message: types.Message, state: FSMContext):
     try:
         if 0 <= int(message.text) <= 100:
             data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q20=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-    
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
-            questions = data.get('questions', [])
-            total_ball = data.get('total_ball', 0)
-            total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q1=int(message.text))
-            
-            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
-                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
-                            reply_markup=get_back_keyboard(),
-                            parse_mode='HTML')
-            await FifthSection.next()
-        else:
-            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
-    except ValueError:
-        await message.answer("Ошибка! Пожалуйста, введите число.")
-        
-        
-@dp.message_handler(state=FifthSection.s5q1)
-async def s5q1_handler(message: types.Message, state: FSMContext):
-    try:
-        if 0 <= int(message.text) <= 100:
-            data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s4q14=int(message.text))
+            await state.update_data(total_ball=total_ball, s5q20=int(message.text))
             
             section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
             total_questions = section.total_questions
             
             five_section_result = (total_ball // total_questions) * 0.1
-            await state.update_data(fvie_section_result=five_section_result)
+            await state.update_data(five_section_result=five_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {round(five_section_result), 1}% из 20% общего\n\n'
+                     f'Результат {five_section_result}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await FifthSection.next()
@@ -2338,3 +2570,562 @@ async def final_s5_handler(message: types.Message, state: FSMContext):
         await SixSection.s6q1.set()
     else:
         await message.answer("Нажмите /next чтобы продолжить")
+
+
+@dp.message_handler(state=SixSection.s6q1)
+async def s6q1_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q1=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q2)
+async def s6q2_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q2=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q3)
+async def s6q3_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q3=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q4)
+async def s6q4_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q4=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q5)
+async def s6q5_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q5=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q6)
+async def s6q6_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q6=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+
+@dp.message_handler(state=SixSection.s6q7)
+async def s6q7_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q7=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q8)
+async def s6q8_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q8=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SixSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SixSection.s6q9)
+async def s6q9_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            total_ball = data.get('total_ball')
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s6q9=int(message.text))
+            
+            section = Section.objects.filter(type=SectionNumberChoices.SIX).first()
+            total_questions = section.total_questions
+            
+            six_section_result = (total_ball // total_questions) * 0.1
+            await state.update_data(six_section_result=six_section_result)
+            
+            await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
+                     f'Результат {six_section_result}% из 10% общего\n\n'
+                     f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
+            
+            await SixSection.next()
+            
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")    
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+@dp.message_handler(state=SixSection.final_s6)
+async def final_s6_handler(message: types.Message, state: FSMContext):
+    if message.text == "/next":
+        total_ball = 0
+        
+        section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions, total_ball=total_ball)
+        
+        await message.answer(f'<strong>Вы перешли на другую секцию</strong>')
+        await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+        
+        await SevenSection.s7q1.set()
+    else:
+        await message.answer("Нажмите /next чтобы продолжить")
+        
+
+@dp.message_handler(state=SevenSection.s7q1)
+async def s7q1_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q1=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q2)
+async def s7q2_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q2=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[2].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q3)
+async def s7q3_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q3=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[3].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q4)
+async def s7q4_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q4=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[4].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q5)
+async def s7q5_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q5=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[5].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q6)
+async def s7q6_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q6=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[6].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q7)
+async def s7q7_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q7=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[7].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q8)
+async def s7q8_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q8=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[8].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q9)
+async def s7q9_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q9=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+        
+@dp.message_handler(state=SevenSection.s7q10)
+async def s7q10_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            questions = data.get('questions', [])
+            total_ball = data.get('total_ball', 0)
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q10=int(message.text))
+            
+            await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[10].title}\n\n'
+                            f'Оцените, пожалуйста, от 0 до 100 баллов.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+            await SevenSection.next()
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.s7q11)
+async def s7q11_handler(message: types.Message, state: FSMContext):
+    try:
+        if 0 <= int(message.text) <= 100:
+            data = await state.get_data()
+            total_ball = data.get('total_ball')
+            total_ball += int(message.text)
+            await state.update_data(total_ball=total_ball, s7q11=int(message.text))
+            
+            section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
+            total_questions = section.total_questions
+            
+            seven_section_result = (total_ball // total_questions) * 0.1
+            await state.update_data(seven_section_result=seven_section_result)
+            
+            branch = data.get("branch")
+            name = data.get("name")
+            await message.answer(f'Branch name: {branch}\n'
+                                 f'Your Name {name}\n')
+            
+            first_section = data.get("first_section_result")
+            second_section = data.get("second_section_result")
+            third_section = data.get("third_section_result")
+            four_section = data.get("four_section_result")
+            five_section = data.get("five_section_result")
+            six_section = data.get("six_section_result")
+            seven_section = seven_section_result
+            # 17.1, 17.1, 11.1 , 6.2, 5.2 , 4.2 , 
+            await message.answer(f'First Result {first_section}%\n'
+                  f'Second Result {second_section}%\n'
+                  f'Third Result {third_section}%\n'  
+                  f'Four Result {four_section}%\n'
+                  f'Five Result {five_section}%\n'
+                  f'Six Result {six_section}%\n'
+                  f'Seven Result {seven_section}%\n')
+            total_score = sum([first_section, second_section, third_section, four_section, five_section, six_section, seven_section])
+            await message.answer(f'Total score:{total_score}')
+            await state.update_data(total_score=total_score)
+            
+            await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
+                     f'Результат {seven_section_result}% из 10% общего\n\n'
+                     f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
+                                    
+            await SevenSection.next()
+            
+        else:
+            await message.answer("Ошибка! Баллы должны быть между 0 и 100.")    
+    except ValueError:
+        await message.answer("Ошибка! Пожалуйста, введите число.")
+        
+        
+@dp.message_handler(state=SevenSection.finale_s7)
+async def final_s7_handler(message: types.Message, state: FSMContext):
+    if message.text == "/next":
+        total_ball = 0
+        
+        section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()
+        questions = list(section.section_questions.order_by('order'))
+        await state.update_data(questions=questions, total_ball=total_ball)
+        
+        await message.answer(f'<strong>Вы перешли на другую секцию</strong>')
+        await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\n'
+                            f'Оценитe, написав комментарий.',
+                            reply_markup=get_back_keyboard(),
+                            parse_mode='HTML')
+        
+        await TextQuestionSection.t1q1.set()
+    else:
+        await message.answer("Нажмите /next чтобы продолжить")
+        
+        
+@dp.message_handler(state=TextQuestionSection.t1q1)
+async def t1q1_handler(message: types.Message, state: FSMContext):
+
+    data = await state.get_data()
+    questions = data.get('questions', [])
+    await state.update_data(t1q1=message.text)
+    
+    await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
+                    f'Оцените,написав комментарий..',
+                    reply_markup=get_back_keyboard(),
+                    parse_mode='HTML')
+    await TextQuestionSection.next()
+
+        
+@dp.message_handler(state=TextQuestionSection.t1q2)
+async def t1q2_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    questions = data.get('questions', [])
+    section = Section.objects.filter(id=9).first()
+    questions = list(section.section_questions.order_by('order'))
+    await state.update_data(questions=questions, t1q2=message.text)
+
+    await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\n'
+                    f'Оцените,написав комментарий..',
+                    reply_markup=get_back_keyboard(),
+                    parse_mode='HTML')
+    await TextQuestionSection.next()
+        
+        
+@dp.message_handler(state=TextQuestionSection.t1q3)
+async def t1q3_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    await state.update_data(t1q3=message.text)
+    questions = data.get('questions', [])
+
+    await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\n'
+                    f'Оцените,написав комментарий..',
+                    reply_markup=get_back_keyboard(),
+                    parse_mode='HTML')
+    
+    await TextQuestionSection.next()
+    
+    
+@dp.message_handler(state=TextQuestionSection.t1q4)
+async def t1q4_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    await state.update_data(t1q4=message.text)
+    t1 = data.get('t1q1')
+    t2 = data.get('t1q2')
+    t3 = data.get('t1q3')
+    t4 = message.text
+    
+    await message.answer(f'Text_1: {t1}\n'
+                         f'Text_2: {t2}\n'
+                         f'Text_3: {t3}\n'
+                         f'Text_4: {t4}\n')
+    
+    await state.finish()  
+    
+            
+ 
