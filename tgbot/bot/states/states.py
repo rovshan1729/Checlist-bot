@@ -9,6 +9,8 @@ from tgbot.bot.keyboards.inline import get_back_keyboard
 class Intro(StatesGroup):
     branch = State()
     name = State()
+    time = State()
+    date = State()
     confirm_reset = State()
 
 
@@ -146,6 +148,7 @@ class TextQuestionSection(StatesGroup):
     t1q2 = State()
     t1q3 = State()
     t1q4 = State()
+    generate_excel = State()  
     
     
     

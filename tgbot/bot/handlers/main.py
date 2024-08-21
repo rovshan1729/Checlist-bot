@@ -21,6 +21,9 @@ from tgbot.bot.keyboards.inline import get_back_keyboard
 import re
 import math
 
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+
 
 dp.middleware.setup(LoggingMiddleware())
 
@@ -35,11 +38,11 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
     questions = data.get('questions', [])
     
     if current_state == Intro.name.state:
-        previous_state == Intro.branch
+        previous_state = Intro.branch
         text = f"<strong>Здравствуйте! Какой филиал вы проверяете?</strong>"
     
     elif current_state == FirstSection.s1q1.state:
-        previous_state == Intro.name
+        previous_state = Intro.name
         text = f"<strong>Введите полное имя проверяющего.</strong>"
 
     elif current_state == FirstSection.s1q2.state:
@@ -176,9 +179,12 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
     elif current_state == SecondSection.s2q13.state:
         previous_state = SecondSection.s2q12
         total_ball -= int(data.get('s2q12', 0))
-        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[11].title}\n\nОцените, 
-        пожалуйста, от 0 до 100 баллов.'
-        
+        text = (
+        f'<strong>{questions[0].section.title}</strong>\n\n'
+        f'{questions[11].title}\n\n'
+        'Оцените, пожалуйста, от 0 до 100 баллов.'
+        )
+         
         """
         Next Section
         """
@@ -609,14 +615,14 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
         section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()
         questions = list(section.section_questions.order_by('order'))
         await state.update_data(questions=questions)
-        t1q1 = ""
-        await state.update_data(t1q1=t1q1)
-        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
+        t1q2 = ""
+        await state.update_data(t1q2=t1q2)
+        text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[1].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
         
     elif current_state == TextQuestionSection.t1q4.state:
         previous_state = TextQuestionSection.t1q3
-        t1q1 = ""
-        await state.update_data(t1q3=t1q1)
+        t1q3 = ""
+        await state.update_data(t1q3=t1q3)
         text = f'<strong>{questions[0].section.title}</strong>\n\n{questions[0].title}\n\nОцените, пожалуйста, от 0 до 100 баллов.'
         
     else:
@@ -632,7 +638,7 @@ async def process_back_button(callback_query: types.CallbackQuery, state: FSMCon
     await previous_state.set()
 
 
-@dp.message_handler(commands=['start'], state="*")
+@dp.message_handler(commands=['start'])
 async def start_handler(message: types.Message):
     await message.answer("<strong>Здравствуйте! Какой филиал вы проверяете?</strong>",
                          reply_markup=get_back_keyboard(),
@@ -653,9 +659,36 @@ async def invalid_branch_handler(message: types.Message):
 
 @dp.message_handler(lambda message: len(message.text.split()) in [2, 3], state=Intro.name)
 async def name_handler(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await message.answer("<strong>Введите время проверки (в формате ЧЧ:ММ).</strong>",
+                         reply_markup=get_back_keyboard(),
+                         parse_mode='HTML')
+    await Intro.time.set()
+
+@dp.message_handler(lambda message: len(message.text.split()) not in [2, 3], state=Intro.name)
+async def invalid_name_handler(message: types.Message):
+    await message.answer("Ошибка! Имя должно состоять из 2 или 3 слов.")
+    
+
+@dp.message_handler(lambda message: re.match(r'^\d{2}:\d{2}$', message.text), state=Intro.time)
+async def time_handler(message: types.Message, state: FSMContext):
+    await state.update_data(time=message.text)
+    await message.answer("<strong>Введите дату проверки (в формате ДД.ММ.ГГГГ).</strong>",
+                         reply_markup=get_back_keyboard(),
+                         parse_mode='HTML')
+    await Intro.date.set()
+
+@dp.message_handler(lambda message: not re.match(r'^\d{2}:\d{2}$', message.text), state=Intro.time)
+async def invalid_time_handler(message: types.Message):
+    await message.answer("Ошибка! Пожалуйста, введите корректное время в формате ЧЧ:ММ.")
+
+@dp.message_handler(lambda message: re.match(r'^\d{2}\.\d{2}\.\d{4}$', message.text), state=Intro.date)
+async def date_handler(message: types.Message, state: FSMContext):
+    await state.update_data(date=message.text)
+    
     sections = Section.objects.filter(type=SectionNumberChoices.FIRST).first()
     questions = list(sections.section_questions.order_by('order'))
-    await state.update_data(questions=questions, name=message.text)
+    await state.update_data(questions=questions)
     
     await message.answer(f'<strong>{sections.title}</strong>\n\n{questions[0].title}\n\n'
                          f'Оцените, пожалуйста, от 0 до 100 баллов.',
@@ -663,9 +696,9 @@ async def name_handler(message: types.Message, state: FSMContext):
                          parse_mode='HTML')
     await FirstSection.s1q1.set()
 
-@dp.message_handler(lambda message: len(message.text.split()) not in [2, 3], state=Intro.name)
-async def invalid_name_handler(message: types.Message):
-    await message.answer("Ошибка! Имя должно состоять из 2 или 3 слов.")
+@dp.message_handler(lambda message: not re.match(r'^\d{2}\.\d{2}\.\d{4}$', message.text), state=Intro.date)
+async def invalid_date_handler(message: types.Message):
+    await message.answer("Ошибка! Пожалуйста, введите корректную дату в формате ДД.ММ.ГГГГ.")
 
 
 @dp.message_handler(state=FirstSection.s1q1)
@@ -789,7 +822,6 @@ async def s1q6_handler(message: types.Message, state: FSMContext):
                                 f'Оцените, пожалуйста, от 0 до 100 баллов.',
                                 reply_markup=get_back_keyboard(),
                                 parse_mode='HTML')
-            
             await FirstSection.next()
         else:
             await message.answer("Ошибка! Баллы должны быть между 0 и 100.")
@@ -1184,11 +1216,10 @@ async def s2q8_handler(message: types.Message, state: FSMContext):
 async def s2q9_handler(message: types.Message, state: FSMContext):
     try:
         if 0 <= int(message.text) <= 100:
-            await state.update_data(s2q5=int(message.text))
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball)
+            await state.update_data(total_ball=total_ball, s2q9=int(message.text))
             questions = data.get('questions', [])
             
             await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[9].title}\n\n'
@@ -2025,7 +2056,7 @@ async def s4q12_handler(message: types.Message, state: FSMContext):
             questions = data.get('questions', [])
             total_ball = data.get('total_ball', 0)
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s4q1=int(message.text))
+            await state.update_data(total_ball=total_ball, s4q12=int(message.text))
             
             await message.answer(f'<strong>{questions[0].section.title}</strong>\n\n{questions[12].title}\n\n'
                             f'Оцените, пожалуйста, от 0 до 100 баллов.',
@@ -3084,8 +3115,6 @@ async def t1q1_handler(message: types.Message, state: FSMContext):
         
 @dp.message_handler(state=TextQuestionSection.t1q2)
 async def t1q2_handler(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    questions = data.get('questions', [])
     section = Section.objects.filter(id=9).first()
     questions = list(section.section_questions.order_by('order'))
     await state.update_data(questions=questions, t1q2=message.text)
@@ -3125,7 +3154,249 @@ async def t1q4_handler(message: types.Message, state: FSMContext):
                          f'Text_3: {t3}\n'
                          f'Text_4: {t4}\n')
     
-    await state.finish()  
     
-            
- 
+    await TextQuestionSection.next()
+    
+      
+@dp.message_handler(state=TextQuestionSection.generate_excel)
+async def generate_excel_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    print("works")
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Main CHEK-List"
+    
+    fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+
+    
+    headers = ["Название Магазина", "Время", "Дата проверки", "Проверяющий"]
+    for idx, header in enumerate(headers, 1):
+        ws.cell(row=1, column=idx, value=header).font = Font(bold=True)
+
+    ws.cell(row=2, column=1, value=data['branch'])
+    ws.cell(row=2, column=2, value=data['time'])
+    ws.cell(row=2, column=3, value=data['date'])
+    ws.cell(row=2, column=4, value=data['name'])
+    
+    
+    # First section
+    section = Section.objects.filter(type=SectionNumberChoices.FIRST).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    first_section_result = data.get('first_section_result')
+
+    cell = ws.cell(row=4, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=4, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=4, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=4, column=4, value="балл").alignment = Alignment(horizontal='center')
+    
+    question_s1 = [q.title for q in questions]
+        
+    first_result = [
+        data.get(f's1q{i+1}', '') for i in range(len(questions))
+    ]
+
+    for idx, question in enumerate(question_s1, start=5):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100) .alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=4, value=first_result[idx-5]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=19, column=3, value=first_section_result).alignment = Alignment(horizontal='center')
+    
+    # second section
+    section = Section.objects.filter(type=SectionNumberChoices.SECOND).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    second_section_result = data.get('second_section_result') 
+    
+    cell = ws.cell(row=20, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")    
+    ws.cell(row=20, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=20, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=20, column=4, value="балл").alignment = Alignment(horizontal='center')
+    
+    question_s2 = [q.title for q in questions]
+    
+    second_result = [
+        data.get(f's2q{i+1}', '') for i in range(len(questions))
+    ]
+
+    for idx, question in enumerate(question_s2, start=21):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
+        ws.cell(row=idx, column=4, value=second_result[idx-21]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=34, column=3, value=second_section_result)
+        
+    # third section
+    section = Section.objects.filter(type=SectionNumberChoices.THIRD).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    third_section_result = data.get('third_section_result')
+    
+    cell = ws.cell(row=35, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=35, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=35, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=35, column=4, value="балл").alignment = Alignment(horizontal='center')
+
+    question_s3 = [q.title for q in questions]
+    
+    third_result = [
+        data.get(f's3q{i+1}', '') for i in range(len(questions))
+    ]
+    
+    for idx, question in enumerate(question_s3, start=36):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center') 
+        ws.cell(row=idx, column=4, value=third_result[idx-36]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=57, column=3, value=third_section_result).alignment = Alignment(horizontal='center')
+        
+    
+    # four section
+    section = Section.objects.filter(type=SectionNumberChoices.FOUR).first()
+    questions = list(section.section_questions.order_by('order'))
+    four_section_result = data.get('four_section_result')
+    
+    cell = ws.cell(row=58, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=58, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=58, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=58, column=4, value="балл").alignment = Alignment(horizontal='center')
+
+    question_s4 = [q.title for q in questions]
+    
+    four_result = [
+        data.get(f's4q{i+1}', '') for i in range(len(questions))
+    ]
+    
+    for idx, question in enumerate(question_s4, start=59):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
+        ws.cell(row=idx, column=4, value=four_result[idx-59]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=72, column=3, value=four_section_result).alignment = Alignment(horizontal='center')
+        
+    
+    # five section
+    section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    five_section_result = data.get('five_section_result')
+    
+    cell = ws.cell(row=73, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=73, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=73, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=73, column=4, value="балл").alignment = Alignment(horizontal='center')
+
+    question_s5 = [q.title for q in questions]
+    
+    five_result = [
+        data.get(f's5q{i+1}', '') for i in range(len(questions))
+    ]
+    
+    for idx, question in enumerate(question_s5, start=74):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
+        ws.cell(row=idx, column=4, value=five_result[idx-74]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=94, column=3, value=five_section_result)
+        
+    
+    # six section
+    section = Section.objects.filter(type=SectionNumberChoices.SIX).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    six_section_result = data.get('six_section_result')
+    
+    cell = ws.cell(row=95, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=95, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=95, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=95, column=4, value="балл").alignment = Alignment(horizontal='center')
+
+    question_s6 = [q.title for q in questions]
+    
+    six_result = [
+        data.get(f's6q{i+1}','') for i in range(len(questions))
+    ]
+    
+    for idx, question in enumerate(question_s6, start=96):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
+        ws.cell(row=idx, column=4, value=six_result[idx-96]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=105, column=3, value=six_section_result).alignment = Alignment(horizontal='center')
+    
+    
+    # seven section
+    section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
+    questions = list(section.section_questions.order_by('order'))
+    seven_section_result = data.get('seven_section_result')
+    
+    cell = ws.cell(row=106, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=106, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=106, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=106, column=4, value="балл").alignment = Alignment(horizontal='center')
+
+    question_s7 = [q.title for q in questions]
+    
+    seven_result = [
+       data.get(f's7q{i+1}','') for i in range(len(questions))
+    ]
+    
+    for idx, question in enumerate(question_s7, start=107):
+        ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
+        ws.cell(row=idx, column=4, value=seven_result[idx-107]).alignment = Alignment(horizontal='center')
+        
+    ws.cell(row=117, column=3, value=seven_section_result).alignment = Alignment(horizontal='center')
+        
+    
+    # first text section
+    section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    cell = ws.cell(row=118, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=118, column=2, value="коментарий").alignment = Alignment(horizontal='center')
+    
+    ws.cell(row=119, column=1, value=questions[0].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=119, column=2, value=data.get('t1q1')).alignment = Alignment(horizontal='center')
+    ws.cell(row=120, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=120, column=2, value=data.get('t1q2')).alignment = Alignment(horizontal='center')
+        
+        
+    # second text section
+    section = Section.objects.filter(id=9).first()
+    questions = list(section.section_questions.order_by('order'))
+    
+    cell = ws.cell(row=122, column=1, value=section.title)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    ws.cell(row=122, column=2, value="коментарий").alignment = Alignment(horizontal='center')
+
+    ws.cell(row=123, column=1, value=questions[0].title).fill = fill
+    ws.cell(row=123, column=2, value=data.get('t1q3')).alignment = Alignment(horizontal='center')
+    ws.cell(row=124, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=124, column=2, value=data.get('t1q4')).alignment = Alignment(horizontal='center')
+
+    wb.save("checklist.xlsx")
+
+    await message.answer("Файл создан! Вот ваш файл:")
+    await message.answer_document(types.InputFile("checklist.xlsx"))
+
+    await state.finish()
+#6000000000000005 Результат 7.2% из 10% общего
