@@ -24,8 +24,14 @@ import math
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
-
 dp.middleware.setup(LoggingMiddleware())
+
+
+@dp.message_handler(commands=['restart'], state="*")
+async def restart_command_handler(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("Теперь вы можете начать с начало.") 
+    await start_handler(message) 
 
 
 @dp.callback_query_handler(lambda c: c.data == 'back', state='*')
@@ -3142,19 +3148,8 @@ async def t1q3_handler(message: types.Message, state: FSMContext):
     
 @dp.message_handler(state=TextQuestionSection.t1q4)
 async def t1q4_handler(message: types.Message, state: FSMContext):
-    data = await state.get_data()
     await state.update_data(t1q4=message.text)
-    t1 = data.get('t1q1')
-    t2 = data.get('t1q2')
-    t3 = data.get('t1q3')
-    t4 = message.text
-    
-    await message.answer(f'Text_1: {t1}\n'
-                         f'Text_2: {t2}\n'
-                         f'Text_3: {t3}\n'
-                         f'Text_4: {t4}\n')
-    
-    
+    await message.answer(f'Напиши что угодно чтобы сгенерировать excel file')        
     await TextQuestionSection.next()
     
       
@@ -3170,13 +3165,26 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
 
     
     headers = ["Название Магазина", "Время", "Дата проверки", "Проверяющий"]
-    for idx, header in enumerate(headers, 1):
-        ws.cell(row=1, column=idx, value=header).font = Font(bold=True)
+    cell = ws.cell(row=1, column=1, value=headers[0])
+    cell.font = Font(bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    cell = ws.cell(row=1, column=2, value=headers[1])
+    cell.font = Font(bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    cell = ws.cell(row=1, column=3, value=headers[2])
+    cell.font = Font(bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    cell = ws.cell(row=1, column=4, value=headers[3])
+    cell.font = Font(bold=True)
+    cell.alignment = Alignment(horizontal='center')
 
-    ws.cell(row=2, column=1, value=data['branch'])
-    ws.cell(row=2, column=2, value=data['time'])
-    ws.cell(row=2, column=3, value=data['date'])
-    ws.cell(row=2, column=4, value=data['name'])
+    ws.cell(row=2, column=1, value=data['branch']).alignment = Alignment(horizontal='center')
+    ws.cell(row=2, column=2, value=data['time']).alignment = Alignment(horizontal='center')
+    ws.cell(row=2, column=3, value=data['date']).alignment = Alignment(horizontal='center')
+    ws.cell(row=2, column=4, value=data['name']).alignment = Alignment(horizontal='center')
     
     
     # First section
@@ -3188,6 +3196,7 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     cell = ws.cell(row=4, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    cell.alignment = Alignment(horizontal='center')
     ws.cell(row=4, column=2, value="вес").alignment = Alignment(horizontal='center')
     ws.cell(row=4, column=3, value="процент").alignment = Alignment(horizontal='center')
     ws.cell(row=4, column=4, value="балл").alignment = Alignment(horizontal='center')
@@ -3213,7 +3222,8 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     
     cell = ws.cell(row=20, column=1, value=section.title)
     cell.font = Font(bold=True)
-    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")    
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")  
+    cell.alignment = Alignment(horizontal='center')  
     ws.cell(row=20, column=2, value="вес").alignment = Alignment(horizontal='center')
     ws.cell(row=20, column=3, value="процент").alignment = Alignment(horizontal='center')
     ws.cell(row=20, column=4, value="балл").alignment = Alignment(horizontal='center')
@@ -3229,7 +3239,7 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
         ws.cell(row=idx, column=4, value=second_result[idx-21]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=34, column=3, value=second_section_result)
+    ws.cell(row=34, column=3, value=second_section_result).alignment = Alignment(horizontal='center')
         
     # third section
     section = Section.objects.filter(type=SectionNumberChoices.THIRD).first()
@@ -3240,6 +3250,7 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     cell = ws.cell(row=35, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    cell.alignment = Alignment(horizontal='center')
     ws.cell(row=35, column=2, value="вес").alignment = Alignment(horizontal='center')
     ws.cell(row=35, column=3, value="процент").alignment = Alignment(horizontal='center')
     ws.cell(row=35, column=4, value="балл").alignment = Alignment(horizontal='center')
@@ -3266,6 +3277,7 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     cell = ws.cell(row=58, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    cell.alignment = Alignment(horizontal='center')
     ws.cell(row=58, column=2, value="вес").alignment = Alignment(horizontal='center')
     ws.cell(row=58, column=3, value="процент").alignment = Alignment(horizontal='center')
     ws.cell(row=58, column=4, value="балл").alignment = Alignment(horizontal='center')
@@ -3281,8 +3293,8 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
         ws.cell(row=idx, column=4, value=four_result[idx-59]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=72, column=3, value=four_section_result).alignment = Alignment(horizontal='center')
-        
+    ws.cell(row=73, column=3, value=four_section_result).alignment = Alignment(horizontal='center')
+         
     
     # five section
     section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
@@ -3290,12 +3302,13 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     
     five_section_result = data.get('five_section_result')
     
-    cell = ws.cell(row=73, column=1, value=section.title)
+    cell = ws.cell(row=74, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
-    ws.cell(row=73, column=2, value="вес").alignment = Alignment(horizontal='center')
-    ws.cell(row=73, column=3, value="процент").alignment = Alignment(horizontal='center')
-    ws.cell(row=73, column=4, value="балл").alignment = Alignment(horizontal='center')
+    cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=74, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=74, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=74, column=4, value="балл").alignment = Alignment(horizontal='center')
 
     question_s5 = [q.title for q in questions]
     
@@ -3303,12 +3316,12 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         data.get(f's5q{i+1}', '') for i in range(len(questions))
     ]
     
-    for idx, question in enumerate(question_s5, start=74):
+    for idx, question in enumerate(question_s5, start=75):
         ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
-        ws.cell(row=idx, column=4, value=five_result[idx-74]).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=4, value=five_result[idx-75]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=94, column=3, value=five_section_result)
+    ws.cell(row=95, column=3, value=five_section_result)
         
     
     # six section
@@ -3317,12 +3330,13 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     
     six_section_result = data.get('six_section_result')
     
-    cell = ws.cell(row=95, column=1, value=section.title)
+    cell = ws.cell(row=96, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
-    ws.cell(row=95, column=2, value="вес").alignment = Alignment(horizontal='center')
-    ws.cell(row=95, column=3, value="процент").alignment = Alignment(horizontal='center')
-    ws.cell(row=95, column=4, value="балл").alignment = Alignment(horizontal='center')
+    cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=96, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=96, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=96, column=4, value="балл").alignment = Alignment(horizontal='center')
 
     question_s6 = [q.title for q in questions]
     
@@ -3330,12 +3344,12 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         data.get(f's6q{i+1}','') for i in range(len(questions))
     ]
     
-    for idx, question in enumerate(question_s6, start=96):
+    for idx, question in enumerate(question_s6, start=97):
         ws.cell(row=idx, column=1, value=question).alignment = Alignment(horizontal='center')
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
-        ws.cell(row=idx, column=4, value=six_result[idx-96]).alignment = Alignment(horizontal='center')
+        ws.cell(row=idx, column=4, value=six_result[idx-97]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=105, column=3, value=six_section_result).alignment = Alignment(horizontal='center')
+    ws.cell(row=106, column=3, value=six_section_result).alignment = Alignment(horizontal='center')
     
     
     # seven section
@@ -3343,12 +3357,13 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     questions = list(section.section_questions.order_by('order'))
     seven_section_result = data.get('seven_section_result')
     
-    cell = ws.cell(row=106, column=1, value=section.title)
+    cell = ws.cell(row=107, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
-    ws.cell(row=106, column=2, value="вес").alignment = Alignment(horizontal='center')
-    ws.cell(row=106, column=3, value="процент").alignment = Alignment(horizontal='center')
-    ws.cell(row=106, column=4, value="балл").alignment = Alignment(horizontal='center')
+    cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=107, column=2, value="вес").alignment = Alignment(horizontal='center')
+    ws.cell(row=107, column=3, value="процент").alignment = Alignment(horizontal='center')
+    ws.cell(row=107, column=4, value="балл").alignment = Alignment(horizontal='center')
 
     question_s7 = [q.title for q in questions]
     
@@ -3361,37 +3376,51 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
         ws.cell(row=idx, column=4, value=seven_result[idx-107]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=117, column=3, value=seven_section_result).alignment = Alignment(horizontal='center')
+    ws.cell(row=118, column=3, value=seven_section_result).alignment = Alignment(horizontal='center')
+    
+    total_score = data.get('total_score', 0)
+    # total result  
+    cell = ws.cell(row=119, column=1, value="Результат")
+    cell = ws.cell(row=119, column=2, value="10100")
+    cell = ws.cell(row=119, column=3, value="weight/total_Ball")
+    cell = ws.cell(row=119, column=4, value="total ball")
+    cell = ws.cell(row=120, column=1, value=total_score)
+    cell.font = Font(bold=True)
+    cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
+    cell.alignment = Alignment(horizontal='center')
+    
         
     
     # first text section
     section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()
     questions = list(section.section_questions.order_by('order'))
     
-    cell = ws.cell(row=118, column=1, value=section.title)
+    cell = ws.cell(row=122, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
-    ws.cell(row=118, column=2, value="коментарий").alignment = Alignment(horizontal='center')
+    cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=122, column=2, value="коментарий").alignment = Alignment(horizontal='center')
     
-    ws.cell(row=119, column=1, value=questions[0].title).alignment = Alignment(horizontal='center')
-    ws.cell(row=119, column=2, value=data.get('t1q1')).alignment = Alignment(horizontal='center')
-    ws.cell(row=120, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
-    ws.cell(row=120, column=2, value=data.get('t1q2')).alignment = Alignment(horizontal='center')
+    ws.cell(row=123, column=1, value=questions[0].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=123, column=2, value=data.get('t1q1')).alignment = Alignment(horizontal='center')
+    ws.cell(row=124, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=124, column=2, value=data.get('t1q2')).alignment = Alignment(horizontal='center')
         
         
     # second text section
     section = Section.objects.filter(id=9).first()
     questions = list(section.section_questions.order_by('order'))
     
-    cell = ws.cell(row=122, column=1, value=section.title)
+    cell = ws.cell(row=125, column=1, value=section.title)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
-    ws.cell(row=122, column=2, value="коментарий").alignment = Alignment(horizontal='center')
+    cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=125, column=2, value="коментарий").alignment = Alignment(horizontal='center')
 
-    ws.cell(row=123, column=1, value=questions[0].title).fill = fill
-    ws.cell(row=123, column=2, value=data.get('t1q3')).alignment = Alignment(horizontal='center')
-    ws.cell(row=124, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
-    ws.cell(row=124, column=2, value=data.get('t1q4')).alignment = Alignment(horizontal='center')
+    ws.cell(row=126, column=1, value=questions[0].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=126, column=2, value=data.get('t1q3')).alignment = Alignment(horizontal='center')
+    ws.cell(row=127, column=1, value=questions[1].title).alignment = Alignment(horizontal='center')
+    ws.cell(row=127, column=2, value=data.get('t1q4')).alignment = Alignment(horizontal='center')
 
     wb.save("checklist.xlsx")
 
@@ -3399,4 +3428,3 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     await message.answer_document(types.InputFile("checklist.xlsx"))
 
     await state.finish()
-#6000000000000005 Результат 7.2% из 10% общего
