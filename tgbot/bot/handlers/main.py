@@ -17,10 +17,11 @@ from tgbot.bot.states.states import (
 from tgbot.bot.loader import dp
 from tgbot.models import Section, SectionNumberChoices 
 from tgbot.bot.keyboards.inline import get_back_keyboard
+from tgbot.models import TelegramProfile
 
 import re
-import math
 
+from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
@@ -993,7 +994,9 @@ async def s1q14_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s1q14=int(message.text))
+            total_score = data.get("total_score", 0)
+            total_score = total_ball
+            await state.update_data(total_ball=total_ball, s1q14=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.FIRST).first()
             total_questions = section.total_questions
@@ -1002,7 +1005,7 @@ async def s1q14_handler(message: types.Message, state: FSMContext):
             await state.update_data(first_section_result=first_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {first_section_result}% из 20% общего\n\n'
+                     f'Результат {round(first_section_result, 2)}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await FirstSection.next()
@@ -1315,7 +1318,9 @@ async def s2q13_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s2q13=int(message.text))
+            total_score = data.get("total_score", 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s2q13=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.SECOND).first()
             total_questions = section.total_questions
@@ -1324,7 +1329,7 @@ async def s2q13_handler(message: types.Message, state: FSMContext):
             await state.update_data(second_section_result=second_section_result)
            
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {second_section_result}% из 20% общего\n\n'
+                     f'Результат {round(second_section_result, 2)}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             await SecondSection.next()
             
@@ -1781,7 +1786,9 @@ async def s3q21_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s3q21=int(message.text))
+            total_score = data.get("total_score", 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s3q21=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.THIRD).first()
             total_questions = section.total_questions
@@ -1790,7 +1797,7 @@ async def s3q21_handler(message: types.Message, state: FSMContext):
             await state.update_data(third_section_result=third_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {third_section_result}% из 20% общего\n\n'
+                     f'Результат {round(third_section_result, 2)}% из 20% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await ThirdSection.next()
@@ -2103,7 +2110,9 @@ async def s4q14_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s4q14=int(message.text))
+            total_score = data.get("total_score", 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s4q14=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.FOUR).first()
             total_questions = section.total_questions
@@ -2112,7 +2121,7 @@ async def s4q14_handler(message: types.Message, state: FSMContext):
             await state.update_data(four_section_result=four_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {four_section_result}% из 10% общего\n\n'
+                     f'Результат {round(four_section_result, 2)}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await FourSection.next()
@@ -2569,7 +2578,9 @@ async def s5q20_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s5q20=int(message.text))
+            total_score = data.get("total_score", 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s5q20=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
             total_questions = section.total_questions
@@ -2578,7 +2589,7 @@ async def s5q20_handler(message: types.Message, state: FSMContext):
             await state.update_data(five_section_result=five_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {five_section_result}% из 10% общего\n\n'
+                     f'Результат {round(five_section_result, 2)}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await FifthSection.next()
@@ -2784,7 +2795,9 @@ async def s6q9_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s6q9=int(message.text))
+            total_score = data.get('total_score', 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s6q9=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.SIX).first()
             total_questions = section.total_questions
@@ -2793,7 +2806,7 @@ async def s6q9_handler(message: types.Message, state: FSMContext):
             await state.update_data(six_section_result=six_section_result)
             
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {six_section_result}% из 10% общего\n\n'
+                     f'Результат {round(six_section_result, 2)}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
             
             await SixSection.next()
@@ -3041,7 +3054,9 @@ async def s7q11_handler(message: types.Message, state: FSMContext):
             data = await state.get_data()
             total_ball = data.get('total_ball')
             total_ball += int(message.text)
-            await state.update_data(total_ball=total_ball, s7q11=int(message.text))
+            total_score = data.get('total_score', 0)
+            total_score += total_ball
+            await state.update_data(total_ball=total_ball, s7q11=int(message.text), total_score=total_score)
             
             section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
             total_questions = section.total_questions
@@ -3049,32 +3064,8 @@ async def s7q11_handler(message: types.Message, state: FSMContext):
             seven_section_result = (total_ball // total_questions) * 0.1
             await state.update_data(seven_section_result=seven_section_result)
             
-            branch = data.get("branch")
-            name = data.get("name")
-            await message.answer(f'Branch name: {branch}\n'
-                                 f'Your Name {name}\n')
-            
-            first_section = data.get("first_section_result")
-            second_section = data.get("second_section_result")
-            third_section = data.get("third_section_result")
-            four_section = data.get("four_section_result")
-            five_section = data.get("five_section_result")
-            six_section = data.get("six_section_result")
-            seven_section = seven_section_result
-            # 17.1, 17.1, 11.1 , 6.2, 5.2 , 4.2 , 
-            await message.answer(f'First Result {first_section}%\n'
-                  f'Second Result {second_section}%\n'
-                  f'Third Result {third_section}%\n'  
-                  f'Four Result {four_section}%\n'
-                  f'Five Result {five_section}%\n'
-                  f'Six Result {six_section}%\n'
-                  f'Seven Result {seven_section}%\n')
-            total_score = sum([first_section, second_section, third_section, four_section, five_section, six_section, seven_section])
-            await message.answer(f'Total score:{total_score}')
-            await state.update_data(total_score=total_score)
-            
             await message.answer(f'<strong>Вы оценили первый {section.title}</strong>\n'
-                     f'Результат {seven_section_result}% из 10% общего\n\n'
+                     f'Результат {round(seven_section_result, 2)}% из 10% общего\n\n'
                      f'Чтобы продолжить оценивание и перейти к следующему разделу, нажмите на /next')
                                     
             await SevenSection.next()
@@ -3163,7 +3154,6 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     
     fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
 
-    
     headers = ["Название Магазина", "Время", "Дата проверки", "Проверяющий"]
     cell = ws.cell(row=1, column=1, value=headers[0])
     cell.font = Font(bold=True)
@@ -3185,7 +3175,6 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
     ws.cell(row=2, column=2, value=data['time']).alignment = Alignment(horizontal='center')
     ws.cell(row=2, column=3, value=data['date']).alignment = Alignment(horizontal='center')
     ws.cell(row=2, column=4, value=data['name']).alignment = Alignment(horizontal='center')
-    
     
     # First section
     section = Section.objects.filter(type=SectionNumberChoices.FIRST).first()
@@ -3268,7 +3257,6 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         
     ws.cell(row=57, column=3, value=third_section_result).alignment = Alignment(horizontal='center')
         
-    
     # four section
     section = Section.objects.filter(type=SectionNumberChoices.FOUR).first()
     questions = list(section.section_questions.order_by('order'))
@@ -3295,7 +3283,6 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         
     ws.cell(row=73, column=3, value=four_section_result).alignment = Alignment(horizontal='center')
          
-    
     # five section
     section = Section.objects.filter(type=SectionNumberChoices.FIVE).first()
     questions = list(section.section_questions.order_by('order'))
@@ -3321,9 +3308,9 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
         ws.cell(row=idx, column=4, value=five_result[idx-75]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=95, column=3, value=five_section_result)
+    ws.cell(row=95, column=3, value=five_section_result).alignment = Alignment(horizontal='center')
+
         
-    
     # six section
     section = Section.objects.filter(type=SectionNumberChoices.SIX).first()
     questions = list(section.section_questions.order_by('order'))
@@ -3351,7 +3338,6 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         
     ws.cell(row=106, column=3, value=six_section_result).alignment = Alignment(horizontal='center')
     
-    
     # seven section
     section = Section.objects.filter(type=SectionNumberChoices.SEVEN).first()
     questions = list(section.section_questions.order_by('order'))
@@ -3376,20 +3362,41 @@ async def generate_excel_handler(message: types.Message, state: FSMContext):
         ws.cell(row=idx, column=2, value=100).alignment = Alignment(horizontal='center')  
         ws.cell(row=idx, column=4, value=seven_result[idx-107]).alignment = Alignment(horizontal='center')
         
-    ws.cell(row=118, column=3, value=seven_section_result).alignment = Alignment(horizontal='center')
+    ws.cell(row=118, column=3, value=seven_section_result).alignment = Alignment(horizontal='center')\
     
-    total_score = data.get('total_score', 0)
+    TelegramProfile.objects.create(
+        telegram_id=int(message.from_user.id),
+        full_name=data.get("name"),
+        branch=data.get("branch"),
+        time=data.get("time"),
+        date=data.get("date"),
+        username=message.from_user.username,
+        finished_at=datetime.now()
+    )
+    
+    first_section = data.get("first_section_result")
+    second_section = data.get("second_section_result")
+    third_section = data.get("third_section_result")
+    four_section = data.get("four_section_result")
+    five_section = data.get("five_section_result")
+    six_section = data.get("six_section_result")
+    seven_section = data.get("seven_section_result")
+
+    total_result = sum([first_section, second_section, third_section, four_section, five_section, six_section, seven_section])
+    await state.update_data(total_result=total_result)
+    
+    total_score = data.get("total_score", 0)
+    total_ball = data.get("total_ball", 0)
+
     # total result  
+    ws.cell(row=119, column=2, value="10100").font = Font(bold=True, color="FF0000")
+    ws.cell(row=119, column=3, value=10100//total_score).font = Font(bold=True, color="FF0000")
+    ws.cell(row=119, column=4, value=total_ball).font = Font(bold=True, color="FF0000")
     cell = ws.cell(row=119, column=1, value="Результат")
-    cell = ws.cell(row=119, column=2, value="10100")
-    cell = ws.cell(row=119, column=3, value="weight/total_Ball")
-    cell = ws.cell(row=119, column=4, value="total ball")
-    cell = ws.cell(row=120, column=1, value=total_score)
+    cell = ws.cell(row=120, column=1, value=total_result)
     cell.font = Font(bold=True)
     cell.fill = PatternFill(start_color="DDA0DD", end_color="DDA0DD", fill_type="solid")
     cell.alignment = Alignment(horizontal='center')
-    
-        
     
     # first text section
     section = Section.objects.filter(type=SectionNumberChoices.TEXT_QUESTION).first()

@@ -7,11 +7,14 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-class TelegramProfile(BaseModel):
+class TelegramProfile(models.Model):
     telegram_id = models.PositiveBigIntegerField(unique=True)
     username = models.CharField(max_length=255, null=True, blank=True)
     branch = models.CharField("Branch name", max_length=255, blank=True, null=True)
     full_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Full Name")
+    time = models.CharField(max_length=255, blank=True, null=True)
+    date = models.CharField(max_length=255, blank=True, null=True)
+    finished_at = models.DateTimeField(blank=True, null=True)
     
     def __str__(self):
         return self.full_name
